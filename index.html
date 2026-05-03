@@ -625,6 +625,10 @@
             font-size: 13px;
             letter-spacing: 0.1em;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .modal-overview {
             color: var(--text-secondary);
@@ -693,9 +697,420 @@
             padding: 0; margin: -1px; overflow: hidden;
             clip: rect(0,0,0,0); border: 0;
         }
+
+        /* =========================================================
+           v3: Genre-reactive background tint layer
+           ========================================================= */
+        .genre-tint {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 1.2s var(--easing), background 1.2s var(--easing);
+            background: radial-gradient(ellipse at center, transparent, transparent);
+        }
+        .genre-tint.active { opacity: 1; }
+        .genre-tint[data-genre="Action"]   { background: radial-gradient(ellipse at top, rgba(232, 88, 47, 0.18), transparent 60%); }
+        .genre-tint[data-genre="Comedy"]   { background: radial-gradient(ellipse at top, rgba(245, 196, 86, 0.16), transparent 60%); }
+        .genre-tint[data-genre="Drama"]    { background: radial-gradient(ellipse at top, rgba(108, 92, 231, 0.16), transparent 60%); }
+        .genre-tint[data-genre="Horror"]   { background: radial-gradient(ellipse at top, rgba(180, 30, 40, 0.22), transparent 65%); }
+        .genre-tint[data-genre="Sci-Fi"]   { background: radial-gradient(ellipse at top, rgba(64, 156, 255, 0.16), transparent 60%); }
+        .genre-tint[data-genre="Romance"]  { background: radial-gradient(ellipse at top, rgba(232, 120, 160, 0.18), transparent 60%); }
+
+        /* =========================================================
+           v3: Header top-right controls (sound + watchlist)
+           ========================================================= */
+        .top-controls {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 50;
+        }
+        .icon-btn {
+            background: rgba(22, 22, 27, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s var(--easing);
+            position: relative;
+        }
+        @media (hover: hover) {
+            .icon-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+        }
+        .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .icon-btn .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--accent);
+            color: var(--bg-deep);
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        /* =========================================================
+           v3: Surprise me button
+           ========================================================= */
+        .surprise-row {
+            margin-top: 18px;
+            text-align: center;
+        }
+        .surprise-btn {
+            background: transparent;
+            border: 1px dashed var(--border-emphasis);
+            color: var(--text-secondary);
+            font-family: var(--display);
+            font-style: italic;
+            font-size: 14px;
+            padding: 10px 22px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.25s var(--easing);
+        }
+        @media (hover: hover) {
+            .surprise-btn:hover {
+                color: var(--accent);
+                border-color: var(--accent);
+                border-style: solid;
+                transform: translateY(-1px);
+            }
+        }
+
+        /* =========================================================
+           v3: Watchlist heart button (on poster + on modal)
+           ========================================================= */
+        .heart-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(10, 10, 12, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s var(--easing);
+            z-index: 5;
+        }
+        @media (hover: hover) {
+            .heart-btn:hover { color: var(--accent); transform: scale(1.1); }
+        }
+        .heart-btn.saved {
+            color: #e74c3c;
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.12);
+        }
+        .heart-btn.pop {
+            animation: heartPop 0.4s var(--easing);
+        }
+        @keyframes heartPop {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+
+        .modal-heart {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 12px;
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: var(--body);
+            transition: all 0.2s var(--easing);
+        }
+        @media (hover: hover) {
+            .modal-heart:hover { color: var(--accent); border-color: var(--accent); }
+        }
+        .modal-heart.saved {
+            color: #e74c3c;
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.08);
+        }
+
+        /* =========================================================
+           v3: Watchlist panel (slide-in drawer)
+           ========================================================= */
+        .drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 5, 7, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 90;
+            display: none;
+            animation: fadeIn 0.25s var(--easing);
+        }
+        .drawer-backdrop.active { display: block; }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: min(420px, 100vw);
+            background: var(--bg-base);
+            border-left: 1px solid var(--border-subtle);
+            box-shadow: -16px 0 48px rgba(0,0,0,0.5);
+            z-index: 95;
+            transform: translateX(100%);
+            transition: transform 0.4s var(--easing);
+            display: flex;
+            flex-direction: column;
+        }
+        .drawer.active { transform: translateX(0); }
+
+        .drawer-header {
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .drawer-header h3 {
+            font-family: var(--display);
+            font-weight: 300;
+            font-size: 22px;
+            color: var(--text-primary);
+        }
+        .drawer-header h3 em { color: var(--accent); font-style: italic; }
+
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px 24px;
+        }
+        .drawer-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .drawer-empty .big { font-size: 40px; display: block; margin-bottom: 12px; }
+
+        .watchlist-item {
+            display: flex;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: background 0.2s var(--easing);
+            position: relative;
+        }
+        .watchlist-item:last-child { border-bottom: none; }
+        @media (hover: hover) {
+            .watchlist-item:hover { background: rgba(255,255,255,0.02); }
+        }
+        .watchlist-item img {
+            width: 54px;
+            height: 81px;
+            object-fit: cover;
+            border-radius: 6px;
+            flex-shrink: 0;
+            background: var(--bg-elevated);
+        }
+        .watchlist-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+        .watchlist-item .info h4 {
+            font-family: var(--display);
+            font-weight: 400;
+            font-size: 15px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            line-height: 1.25;
+        }
+        .watchlist-item .info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .watchlist-item .remove {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 14px;
+            align-self: center;
+            border-radius: 4px;
+            transition: color 0.2s var(--easing);
+        }
+        @media (hover: hover) {
+            .watchlist-item .remove:hover { color: var(--danger); }
+        }
+
+        /* =========================================================
+           v3: Cast & crew grid in modal
+           ========================================================= */
+        .cast-section {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .cast-section h4,
+        .similar-section h4 {
+            font-family: var(--display);
+            font-weight: 400;
+            font-style: italic;
+            color: var(--accent);
+            font-size: 14px;
+            letter-spacing: 0.05em;
+            margin-bottom: 14px;
+            text-transform: lowercase;
+        }
+        .cast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 16px 12px;
+        }
+        .cast-card {
+            text-align: center;
+        }
+        .cast-photo {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--bg-elevated);
+            margin-bottom: 8px;
+            display: block;
+            border: 1px solid var(--border-subtle);
+        }
+        .cast-photo.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--text-muted);
+        }
+        .cast-name {
+            font-size: 12px;
+            color: var(--text-primary);
+            line-height: 1.3;
+            margin-bottom: 2px;
+        }
+        .cast-character {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+            line-height: 1.3;
+        }
+
+        /* =========================================================
+           v3: "More like this" section
+           ========================================================= */
+        .similar-section {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .similar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 14px 10px;
+        }
+        .similar-card {
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: inherit;
+            text-align: left;
+            transition: transform 0.2s var(--easing);
+        }
+        @media (hover: hover) {
+            .similar-card:hover { transform: translateY(-3px); }
+        }
+        .similar-card img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            border-radius: 8px;
+            background: var(--bg-elevated);
+            display: block;
+            margin-bottom: 6px;
+        }
+        .similar-card .stitle {
+            font-size: 12px;
+            color: var(--text-primary);
+            line-height: 1.3;
+            font-family: var(--display);
+        }
+        .similar-loading,
+        .cast-loading {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        /* =========================================================
+           v3: Confetti canvas
+           ========================================================= */
+        #confetti-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 80;
+        }
     </style>
 </head>
 <body>
+    <!-- v3: Genre-reactive background tint -->
+    <div class="genre-tint" id="genre-tint" aria-hidden="true"></div>
+
+    <!-- v3: Confetti overlay -->
+    <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+    <!-- v3: Top-right controls (sound + watchlist) -->
+    <div class="top-controls">
+        <button id="btn-sound" class="icon-btn" type="button" aria-label="Toggle sound" title="Sound off">🔇</button>
+        <button id="btn-watchlist" class="icon-btn" type="button" aria-label="Open watchlist" title="Watchlist">
+            ♡<span class="badge hidden" id="watchlist-badge">0</span>
+        </button>
+    </div>
+
+    <!-- v3: Watchlist drawer -->
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="drawer-title">
+        <div class="drawer-header">
+            <h3 id="drawer-title">Your <em>watchlist</em></h3>
+            <button class="icon-btn" id="drawer-close" type="button" aria-label="Close watchlist" style="width:34px;height:34px;font-size:14px;">×</button>
+        </div>
+        <div class="drawer-body" id="drawer-body"></div>
+    </aside>
+
     <main class="app">
         <header class="header">
             <div class="logo-mark">Cinematch</div>
@@ -723,6 +1138,11 @@
                 <button id="btn-back" class="btn btn-ghost" type="button">← Back</button>
                 <div class="btn-row-spacer"></div>
                 <button id="btn-next" class="btn btn-primary" type="button">Next →</button>
+            </div>
+
+            <!-- v3: Surprise me row (only visible on Q1) -->
+            <div class="surprise-row" id="surprise-row">
+                <button id="btn-surprise" class="surprise-btn" type="button">Or, surprise me 🎲</button>
             </div>
         </section>
 
@@ -763,11 +1183,22 @@
                     <div class="trailer-fallback">Loading trailer…</div>
                 </div>
                 <h3 class="modal-title" id="modal-title"></h3>
-                <p class="modal-subtitle" id="modal-subtitle"></p>
+                <p class="modal-subtitle" id="modal-subtitle">
+                    <span id="modal-subtitle-text"></span>
+                    <button class="modal-heart" id="modal-heart" type="button">♡ <span id="modal-heart-text">Save</span></button>
+                </p>
                 <p class="modal-overview" id="modal-overview"></p>
                 <div class="providers-section">
                     <h4>where to watch</h4>
                     <div id="providers-content"></div>
+                </div>
+                <div class="cast-section" id="cast-section">
+                    <h4>cast</h4>
+                    <div id="cast-content"><div class="cast-loading">Loading cast…</div></div>
+                </div>
+                <div class="similar-section" id="similar-section">
+                    <h4>more like this</h4>
+                    <div id="similar-content"><div class="similar-loading">Finding similar titles…</div></div>
                 </div>
             </div>
         </div>
@@ -860,8 +1291,25 @@
         trailerFrame: $('trailer-frame'),
         modalTitle: $('modal-title'),
         modalSubtitle: $('modal-subtitle'),
+        modalSubtitleText: $('modal-subtitle-text'),
         modalOverview: $('modal-overview'),
-        providersContent: $('providers-content')
+        providersContent: $('providers-content'),
+        // v3 additions
+        genreTint: $('genre-tint'),
+        topSound: $('btn-sound'),
+        topWatchlist: $('btn-watchlist'),
+        watchlistBadge: $('watchlist-badge'),
+        drawer: $('drawer'),
+        drawerBackdrop: $('drawer-backdrop'),
+        drawerBody: $('drawer-body'),
+        drawerClose: $('drawer-close'),
+        surpriseRow: $('surprise-row'),
+        btnSurprise: $('btn-surprise'),
+        modalHeart: $('modal-heart'),
+        modalHeartText: $('modal-heart-text'),
+        castContent: $('cast-content'),
+        similarContent: $('similar-content'),
+        confettiCanvas: $('confetti-canvas')
     };
 
     /* =========================================================
@@ -970,11 +1418,20 @@
         // Buttons
         els.btnBack.disabled = state.index === 0;
         els.btnNext.textContent = state.index >= total - 1 ? 'See picks ✦' : 'Next →';
+
+        // v3: Show "Surprise me" only on first question
+        els.surpriseRow.style.display = state.index === 0 ? 'block' : 'none';
+
+        // v3: Restore genre tint if a genre was previously chosen
+        if (state.answers.genre) applyGenreTint(state.answers.genre);
     }
 
     function selectOption(key, label) {
         state.answers[key] = label;
         saveSession();
+        soundClick();
+        // Apply genre tint when user picks a genre
+        if (key === 'genre') applyGenreTint(label);
         // Re-render to update aria + selected state
         const buttons = els.options.querySelectorAll('.option-card');
         buttons.forEach(b => {
@@ -1147,6 +1604,13 @@
             const card = buildPosterCard(item, idx);
             els.posterGrid.appendChild(card);
         });
+
+        // v3: Confetti + sound on first results of session
+        if (!firstResultsShown) {
+            firstResultsShown = true;
+            soundComplete();
+            setTimeout(() => fireConfetti(), 200);
+        }
     }
 
     function buildPosterCard(item, idx) {
@@ -1179,6 +1643,28 @@
             r.textContent = rating;
             wrap.appendChild(r);
         }
+
+        // v3: Heart button (watchlist)
+        const heart = document.createElement('button');
+        heart.className = 'heart-btn';
+        heart.type = 'button';
+        heart.setAttribute('aria-label', 'Save to watchlist');
+        heart.innerHTML = isInWatchlist(item) ? '♥' : '♡';
+        if (isInWatchlist(item)) heart.classList.add('saved');
+        heart.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const added = toggleWatchlist(item);
+            heart.classList.toggle('saved', added);
+            heart.innerHTML = added ? '♥' : '♡';
+            heart.classList.remove('pop');
+            // Force reflow then re-add to retrigger animation
+            void heart.offsetWidth;
+            heart.classList.add('pop');
+            soundHeart();
+            updateWatchlistBadge();
+        });
+        wrap.appendChild(heart);
+
         const overlay = document.createElement('div');
         overlay.className = 'play-overlay';
         const overlaySpan = document.createElement('span');
@@ -1240,19 +1726,38 @@
         const rating = item.vote_average ? `★ ${item.vote_average.toFixed(1)}` : '';
 
         els.modalTitle.textContent = title;
-        els.modalSubtitle.textContent = [year, rating].filter(Boolean).join(' · ');
+        els.modalSubtitleText.textContent = [year, rating].filter(Boolean).join(' · ');
         els.modalOverview.textContent = item.overview || 'No overview available.';
         els.trailerFrame.innerHTML = '<div class="trailer-fallback">Loading trailer…</div>';
         els.providersContent.innerHTML = '<div class="providers-empty">Loading…</div>';
+        els.castContent.innerHTML = '<div class="cast-loading">Loading cast…</div>';
+        els.similarContent.innerHTML = '<div class="similar-loading">Finding similar titles…</div>';
+
+        // v3: wire up modal heart button to current item
+        const updateModalHeart = () => {
+            const saved = isInWatchlist(item);
+            els.modalHeart.classList.toggle('saved', saved);
+            els.modalHeart.innerHTML = saved ? '♥ <span id="modal-heart-text">Saved</span>' : '♡ <span id="modal-heart-text">Save</span>';
+        };
+        updateModalHeart();
+        els.modalHeart.onclick = () => {
+            toggleWatchlist(item);
+            updateModalHeart();
+            soundHeart();
+            updateWatchlistBadge();
+        };
+
         els.modalBackdrop.classList.add('active');
         document.body.style.overflow = 'hidden';
 
         const endpoint = isMovie ? 'movie' : 'tv';
 
-        // Fetch trailer + providers in parallel
-        const [videos, providers] = await Promise.allSettled([
+        // Fetch trailer + providers + cast + similar in parallel
+        const [videos, providers, credits, similar] = await Promise.allSettled([
             fetch(`${CONFIG.API_BASE}/${endpoint}/${item.id}/videos?api_key=${CONFIG.API_KEY}&language=en-US`).then(r => r.json()),
-            fetch(`${CONFIG.API_BASE}/${endpoint}/${item.id}/watch/providers?api_key=${CONFIG.API_KEY}`).then(r => r.json())
+            fetch(`${CONFIG.API_BASE}/${endpoint}/${item.id}/watch/providers?api_key=${CONFIG.API_KEY}`).then(r => r.json()),
+            fetch(`${CONFIG.API_BASE}/${endpoint}/${item.id}/credits?api_key=${CONFIG.API_KEY}&language=en-US`).then(r => r.json()),
+            fetch(`${CONFIG.API_BASE}/${endpoint}/${item.id}/similar?api_key=${CONFIG.API_KEY}&language=en-US&page=1`).then(r => r.json())
         ]);
 
         // Trailer
@@ -1275,7 +1780,7 @@
             els.trailerFrame.innerHTML = '<div class="trailer-fallback">Trailer unavailable.</div>';
         }
 
-        // Providers — try user's region first, then US fallback
+        // Providers
         if (providers.status === 'fulfilled') {
             const regions = providers.value.results || {};
             const userLocale = (navigator.language || 'en-US').split('-')[1] || 'US';
@@ -1284,6 +1789,110 @@
         } else {
             els.providersContent.innerHTML = '<div class="providers-empty">Provider info unavailable.</div>';
         }
+
+        // v3: Cast
+        if (credits.status === 'fulfilled') {
+            renderCast(credits.value.cast || []);
+        } else {
+            els.castContent.innerHTML = '<div class="cast-loading">Cast unavailable.</div>';
+        }
+
+        // v3: Similar titles
+        if (similar.status === 'fulfilled') {
+            renderSimilar(similar.value.results || [], isMovie);
+        } else {
+            els.similarContent.innerHTML = '<div class="similar-loading">Couldn\'t find similar titles.</div>';
+        }
+    }
+
+    /* =========================================================
+       v3: Render cast grid (top 6)
+       ========================================================= */
+    function renderCast(cast) {
+        if (!cast.length) {
+            els.castContent.innerHTML = '<div class="cast-loading">No cast info available.</div>';
+            return;
+        }
+        const top = cast.slice(0, 6);
+        const grid = document.createElement('div');
+        grid.className = 'cast-grid';
+        top.forEach(person => {
+            const card = document.createElement('div');
+            card.className = 'cast-card';
+
+            if (person.profile_path) {
+                const img = document.createElement('img');
+                img.className = 'cast-photo';
+                img.src = `${CONFIG.IMG_BASE}/w185${person.profile_path}`;
+                img.alt = '';
+                img.loading = 'lazy';
+                card.appendChild(img);
+            } else {
+                const ph = document.createElement('div');
+                ph.className = 'cast-photo placeholder';
+                ph.textContent = '👤';
+                card.appendChild(ph);
+            }
+
+            const name = document.createElement('div');
+            name.className = 'cast-name';
+            name.textContent = person.name;
+            card.appendChild(name);
+
+            if (person.character) {
+                const ch = document.createElement('div');
+                ch.className = 'cast-character';
+                ch.textContent = person.character;
+                card.appendChild(ch);
+            }
+
+            grid.appendChild(card);
+        });
+        els.castContent.innerHTML = '';
+        els.castContent.appendChild(grid);
+    }
+
+    /* =========================================================
+       v3: Render similar titles (top 6)
+       ========================================================= */
+    function renderSimilar(items, isMovie) {
+        const filtered = items.filter(i => i.poster_path).slice(0, 6);
+        if (!filtered.length) {
+            els.similarContent.innerHTML = '<div class="similar-loading">No similar titles found.</div>';
+            return;
+        }
+        const grid = document.createElement('div');
+        grid.className = 'similar-grid';
+        filtered.forEach(item => {
+            const card = document.createElement('button');
+            card.className = 'similar-card';
+            card.type = 'button';
+            const title = isMovie ? item.title : item.name;
+            card.setAttribute('aria-label', `View ${title}`);
+
+            const img = document.createElement('img');
+            img.src = `${CONFIG.IMG_BASE}/w300${item.poster_path}`;
+            img.alt = '';
+            img.loading = 'lazy';
+            card.appendChild(img);
+
+            const t = document.createElement('div');
+            t.className = 'stitle';
+            t.textContent = title;
+            card.appendChild(t);
+
+            card.addEventListener('click', () => {
+                // Open this similar title in the modal
+                openModal({ ...item, __isMovie: isMovie });
+                // Scroll modal back to top
+                const modal = els.modalBackdrop.querySelector('.modal');
+                if (modal) modal.scrollTop = 0;
+            });
+
+            grid.appendChild(card);
+        });
+        els.similarContent.innerHTML = '';
+        els.similarContent.appendChild(grid);
     }
 
     function renderProviders(region, locale) {
@@ -1339,11 +1948,307 @@
         state.answers = {};
         state.results = [];
         clearSession();
+        clearGenreTint();
         els.results.classList.add('hidden');
         els.survey.classList.remove('hidden');
         renderQuestion();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    /* =========================================================
+       v3: SOUND EFFECTS (Web Audio, no files needed)
+       ========================================================= */
+    const SOUND_KEY = 'cinematch:sound';
+    let soundOn = localStorage.getItem(SOUND_KEY) === '1';
+    let audioCtx = null;
+
+    function getAudioCtx() {
+        if (!audioCtx) {
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            catch (_) { audioCtx = false; }
+        }
+        return audioCtx;
+    }
+
+    function playTone(freq, duration = 0.08, type = 'sine', vol = 0.08) {
+        if (!soundOn) return;
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + duration);
+        } catch (_) {}
+    }
+
+    function soundClick()    { playTone(880, 0.05, 'sine', 0.06); }
+    function soundComplete() {
+        playTone(523, 0.1, 'sine', 0.08);
+        setTimeout(() => playTone(659, 0.1, 'sine', 0.08), 90);
+        setTimeout(() => playTone(784, 0.18, 'sine', 0.09), 180);
+    }
+    function soundHeart()    { playTone(1200, 0.06, 'triangle', 0.05); }
+
+    function updateSoundButton() {
+        els.topSound.textContent = soundOn ? '🔊' : '🔇';
+        els.topSound.title = soundOn ? 'Sound on' : 'Sound off';
+        els.topSound.setAttribute('aria-label', soundOn ? 'Mute sounds' : 'Enable sounds');
+    }
+    function toggleSound() {
+        soundOn = !soundOn;
+        localStorage.setItem(SOUND_KEY, soundOn ? '1' : '0');
+        updateSoundButton();
+        if (soundOn) soundClick(); // give immediate feedback
+    }
+
+    /* =========================================================
+       v3: WATCHLIST (localStorage, max 50)
+       ========================================================= */
+    const WATCHLIST_KEY = 'cinematch:watchlist';
+    const WATCHLIST_LIMIT = 50;
+
+    function getWatchlist() {
+        try { return JSON.parse(localStorage.getItem(WATCHLIST_KEY) || '[]'); }
+        catch (_) { return []; }
+    }
+    function saveWatchlist(list) {
+        try { localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list)); }
+        catch (_) {}
+    }
+    function isInWatchlist(item) {
+        return getWatchlist().some(w => w.id === item.id && w.kind === (item.__isMovie ? 'movie' : 'tv'));
+    }
+    function toggleWatchlist(item) {
+        const list = getWatchlist();
+        const kind = item.__isMovie ? 'movie' : 'tv';
+        const existingIdx = list.findIndex(w => w.id === item.id && w.kind === kind);
+        if (existingIdx > -1) {
+            list.splice(existingIdx, 1);
+            saveWatchlist(list);
+            return false; // removed
+        } else {
+            if (list.length >= WATCHLIST_LIMIT) {
+                list.shift(); // drop oldest
+            }
+            list.push({
+                id: item.id,
+                kind,
+                title: item.__isMovie ? item.title : item.name,
+                year: (() => {
+                    const d = item.__isMovie ? item.release_date : item.first_air_date;
+                    return d ? new Date(d).getFullYear() : '—';
+                })(),
+                poster: item.poster_path || null,
+                rating: item.vote_average || null,
+                overview: item.overview || '',
+                addedAt: Date.now()
+            });
+            saveWatchlist(list);
+            return true; // added
+        }
+    }
+    function updateWatchlistBadge() {
+        const count = getWatchlist().length;
+        if (count > 0) {
+            els.watchlistBadge.textContent = count;
+            els.watchlistBadge.classList.remove('hidden');
+        } else {
+            els.watchlistBadge.classList.add('hidden');
+        }
+    }
+
+    function openDrawer() {
+        renderDrawer();
+        els.drawerBackdrop.classList.add('active');
+        els.drawer.classList.add('active');
+        els.drawer.setAttribute('aria-hidden', 'false');
+    }
+    function closeDrawer() {
+        els.drawerBackdrop.classList.remove('active');
+        els.drawer.classList.remove('active');
+        els.drawer.setAttribute('aria-hidden', 'true');
+    }
+
+    function renderDrawer() {
+        const list = getWatchlist().slice().reverse(); // newest first
+        if (!list.length) {
+            els.drawerBody.innerHTML = `
+                <div class="drawer-empty">
+                    <span class="big">♡</span>
+                    Save films you'd like to watch later by tapping the heart on any poster.
+                </div>`;
+            return;
+        }
+        els.drawerBody.innerHTML = '';
+        list.forEach(w => {
+            const row = document.createElement('div');
+            row.className = 'watchlist-item';
+
+            const img = document.createElement('img');
+            img.src = w.poster ? `${CONFIG.IMG_BASE}/w185${w.poster}` : '';
+            img.alt = '';
+            img.loading = 'lazy';
+            if (!w.poster) { img.style.display = 'flex'; img.style.alignItems = 'center'; img.style.justifyContent = 'center'; }
+            row.appendChild(img);
+
+            const info = document.createElement('div');
+            info.className = 'info';
+            const h4 = document.createElement('h4');
+            h4.textContent = w.title;
+            const p = document.createElement('p');
+            const ratingTxt = w.rating ? ` · ★ ${w.rating.toFixed(1)}` : '';
+            p.textContent = `${w.year} · ${w.kind === 'movie' ? 'Film' : 'Series'}${ratingTxt}`;
+            info.appendChild(h4);
+            info.appendChild(p);
+            row.appendChild(info);
+
+            const remove = document.createElement('button');
+            remove.className = 'remove';
+            remove.type = 'button';
+            remove.innerHTML = '×';
+            remove.title = 'Remove';
+            remove.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const all = getWatchlist();
+                const filtered = all.filter(x => !(x.id === w.id && x.kind === w.kind));
+                saveWatchlist(filtered);
+                updateWatchlistBadge();
+                renderDrawer();
+            });
+            row.appendChild(remove);
+
+            // Click row → open modal
+            row.addEventListener('click', () => {
+                // Reconstruct minimal item shape and open modal
+                const fakeItem = {
+                    id: w.id,
+                    title: w.title,
+                    name: w.title,
+                    release_date: `${w.year}-01-01`,
+                    first_air_date: `${w.year}-01-01`,
+                    overview: w.overview,
+                    vote_average: w.rating,
+                    poster_path: w.poster,
+                    __isMovie: w.kind === 'movie'
+                };
+                closeDrawer();
+                openModal(fakeItem);
+            });
+
+            els.drawerBody.appendChild(row);
+        });
+    }
+
+    /* =========================================================
+       v3: CONFETTI (canvas-based, no library)
+       ========================================================= */
+    function fireConfetti(durationMs = 2200) {
+        const canvas = els.confettiCanvas;
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        function resize() {
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
+        }
+        resize();
+
+        const colors = ['#d4a574','#e8b87f','#f5c456','#a8a29e','#c8553d','#e87830'];
+        const particles = [];
+        const N = 140;
+        for (let i = 0; i < N; i++) {
+            particles.push({
+                x: window.innerWidth / 2 + (Math.random() - 0.5) * 200,
+                y: window.innerHeight / 3,
+                vx: (Math.random() - 0.5) * 12,
+                vy: -Math.random() * 14 - 4,
+                size: 4 + Math.random() * 6,
+                rot: Math.random() * Math.PI * 2,
+                vr: (Math.random() - 0.5) * 0.3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                shape: Math.random() < 0.5 ? 'rect' : 'circ'
+            });
+        }
+        const start = performance.now();
+        const gravity = 0.45;
+        let raf;
+
+        function tick(now) {
+            const elapsed = now - start;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const fade = Math.max(0, 1 - (elapsed / durationMs));
+            particles.forEach(p => {
+                p.vy += gravity;
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rot += p.vr;
+                ctx.save();
+                ctx.globalAlpha = fade;
+                ctx.translate(p.x * dpr, p.y * dpr);
+                ctx.rotate(p.rot);
+                ctx.fillStyle = p.color;
+                if (p.shape === 'rect') {
+                    ctx.fillRect(-p.size * dpr, -p.size * dpr * 0.5, p.size * 2 * dpr, p.size * dpr);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, p.size * dpr, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+            if (elapsed < durationMs) {
+                raf = requestAnimationFrame(tick);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                cancelAnimationFrame(raf);
+            }
+        }
+        raf = requestAnimationFrame(tick);
+    }
+
+    /* =========================================================
+       v3: SURPRISE ME (auto-fill survey + jump to results)
+       ========================================================= */
+    function surpriseMe() {
+        soundClick();
+        // Pick a random option for each question
+        CONFIG.QUESTIONS.forEach(q => {
+            const choice = q.opts[Math.floor(Math.random() * q.opts.length)][0];
+            state.answers[q.key] = choice;
+        });
+        state.index = CONFIG.QUESTIONS.length - 1;
+        saveSession();
+        applyGenreTint(state.answers.genre);
+        runRecommendations();
+    }
+
+    /* =========================================================
+       v3: GENRE-REACTIVE BACKGROUND
+       ========================================================= */
+    function applyGenreTint(genre) {
+        if (!genre) {
+            els.genreTint.classList.remove('active');
+            return;
+        }
+        els.genreTint.setAttribute('data-genre', genre);
+        els.genreTint.classList.add('active');
+    }
+    function clearGenreTint() {
+        els.genreTint.classList.remove('active');
+    }
+
+    /* =========================================================
+       v3: Track first-run for confetti (only on first result of session)
+       ========================================================= */
+    let firstResultsShown = false;
 
     /* =========================================================
        Wire it up
@@ -1356,13 +2261,27 @@
         if (e.target === els.modalBackdrop) closeModal();
     });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && els.modalBackdrop.classList.contains('active')) closeModal();
+        if (e.key === 'Escape') {
+            if (els.modalBackdrop.classList.contains('active')) closeModal();
+            else if (els.drawer.classList.contains('active')) closeDrawer();
+        }
     });
+
+    // v3: Top controls
+    els.topSound.addEventListener('click', toggleSound);
+    els.topWatchlist.addEventListener('click', openDrawer);
+    els.drawerClose.addEventListener('click', closeDrawer);
+    els.drawerBackdrop.addEventListener('click', closeDrawer);
+
+    // v3: Surprise me
+    els.btnSurprise.addEventListener('click', surpriseMe);
 
     // Boot
     loadSession();
     renderQuestion();
     bumpVisitorCount();
+    updateSoundButton();
+    updateWatchlistBadge();
     </script>
 </body>
 </html>
