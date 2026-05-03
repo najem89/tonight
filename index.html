@@ -890,19 +890,30 @@
     }
 
     /* =========================================================
-       Visitor counter (localStorage)
+       Visitor counter (real global counter via Abacus)
        ========================================================= */
-    function bumpVisitorCount() {
+    async function bumpVisitorCount() {
+        const NAMESPACE = 'cinematch-najem89';
+        const KEY = 'visits';
+        const COUNTED_FLAG = 'cinematch:counted';
+
         try {
-            // only count one bump per browser session
-            if (!sessionStorage.getItem('cinematch:counted')) {
-                const n = parseInt(localStorage.getItem(CONFIG.VISIT_KEY) || '0', 10) + 1;
-                localStorage.setItem(CONFIG.VISIT_KEY, String(n));
-                sessionStorage.setItem('cinematch:counted', '1');
-            }
-            const display = parseInt(localStorage.getItem(CONFIG.VISIT_KEY) || '0', 10);
-            els.visitorCount.textContent = display.toLocaleString();
-        } catch (_) {
+            // If this session already counted, just fetch the number (don't increment)
+            const alreadyCounted = sessionStorage.getItem(COUNTED_FLAG);
+            const action = alreadyCounted ? 'get' : 'hit';
+
+            const url = `https://abacus.jasoncameron.dev/${action}/${NAMESPACE}/${KEY}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Counter unavailable');
+
+            const data = await response.json();
+            const count = data.value || 0;
+
+            if (!alreadyCounted) sessionStorage.setItem(COUNTED_FLAG, '1');
+
+            els.visitorCount.textContent = count.toLocaleString();
+        } catch (error) {
+            console.error('Visitor counter error:', error);
             els.visitorCount.textContent = '—';
         }
     }
