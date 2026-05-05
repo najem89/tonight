@@ -1084,6 +1084,383 @@
             pointer-events: none;
             z-index: 80;
         }
+
+        /* =========================================================
+           v4: Search bar (homepage)
+           ========================================================= */
+        .search-section {
+            max-width: 640px;
+            margin: 0 auto 32px;
+            position: relative;
+            z-index: 5;
+        }
+        .search-eyebrow {
+            text-align: center;
+            font-family: var(--display);
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+        .search-bar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 999px;
+            padding: 6px 6px 6px 20px;
+            transition: all 0.25s var(--easing);
+            box-shadow: var(--shadow-soft);
+        }
+        .search-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-soft), 0 0 0 3px rgba(212, 165, 116, 0.15);
+        }
+        .search-icon {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-family: var(--body);
+            font-size: 15px;
+            padding: 14px 0;
+            min-width: 0;
+        }
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        .search-clear {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s var(--easing);
+            flex-shrink: 0;
+        }
+        @media (hover: hover) {
+            .search-clear:hover {
+                background: rgba(255, 255, 255, 0.05);
+                color: var(--text-primary);
+            }
+        }
+        .search-loader {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border-subtle);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spinSm 0.8s linear infinite;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        @keyframes spinSm { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+        /* Suggestion dropdown */
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-deep);
+            max-height: 480px;
+            overflow-y: auto;
+            display: none;
+            animation: dropdownIn 0.2s var(--easing);
+        }
+        .search-dropdown.active { display: block; }
+        @keyframes dropdownIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-section-label {
+            padding: 12px 18px 8px;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-family: var(--display);
+            font-style: italic;
+        }
+
+        .suggestion {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px;
+            cursor: pointer;
+            transition: background 0.15s var(--easing);
+            border: none;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            width: 100%;
+            font: inherit;
+        }
+        .suggestion:not(:last-child) {
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        @media (hover: hover) {
+            .suggestion:hover { background: rgba(255, 255, 255, 0.03); }
+        }
+        .suggestion.active {
+            background: rgba(212, 165, 116, 0.08);
+        }
+        .suggestion .thumb {
+            width: 56px;
+            height: 84px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: var(--bg-elevated);
+            flex-shrink: 0;
+            display: block;
+        }
+        .suggestion .thumb.person {
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            align-self: center;
+        }
+        .suggestion .thumb.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 22px;
+        }
+        .suggestion-info { flex: 1; min-width: 0; }
+        .suggestion-title {
+            font-family: var(--display);
+            font-weight: 400;
+            font-size: 15px;
+            color: var(--text-primary);
+            line-height: 1.25;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .suggestion-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        .suggestion-meta .type-tag {
+            display: inline-block;
+            padding: 1px 6px;
+            background: rgba(212, 165, 116, 0.12);
+            color: var(--accent);
+            border-radius: 3px;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-right: 6px;
+        }
+        .suggestion-overview {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .dropdown-empty {
+            padding: 28px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-style: italic;
+        }
+        .recent-clear {
+            display: block;
+            margin: 8px 18px 12px;
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 6px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s var(--easing);
+        }
+        @media (hover: hover) {
+            .recent-clear:hover { color: var(--danger); border-color: var(--danger); }
+        }
+
+        /* Search divider */
+        .search-divider {
+            display: flex;
+            align-items: center;
+            max-width: 640px;
+            margin: 0 auto 32px;
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+        .search-divider::before,
+        .search-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+        .search-divider span {
+            padding: 0 16px;
+        }
+
+        /* =========================================================
+           v4: Focused popup (search results — providers only)
+           ========================================================= */
+        .focus-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 5, 7, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 110;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.25s var(--easing);
+        }
+        .focus-backdrop.active { display: flex; }
+
+        .focus-popup {
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            max-width: 480px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-deep);
+            position: relative;
+            animation: modalIn 0.35s var(--easing);
+        }
+
+        .focus-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(10, 10, 12, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        @media (hover: hover) {
+            .focus-close:hover { border-color: var(--accent); color: var(--accent); }
+        }
+
+        .focus-hero {
+            position: relative;
+            height: 220px;
+            background: var(--bg-elevated);
+            overflow: hidden;
+        }
+        .focus-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.5);
+        }
+        .focus-hero-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 60px;
+            color: var(--text-muted);
+        }
+        .focus-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 30%, var(--bg-base) 100%);
+        }
+
+        .focus-body {
+            padding: 0 28px 28px;
+            margin-top: -60px;
+            position: relative;
+            z-index: 5;
+        }
+        @media (max-width: 540px) {
+            .focus-body { padding: 0 20px 24px; }
+        }
+
+        .focus-person-hint {
+            font-size: 12px;
+            font-style: italic;
+            color: var(--accent);
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+        .focus-title {
+            font-family: var(--display);
+            font-weight: 300;
+            font-size: clamp(24px, 4vw, 32px);
+            line-height: 1.15;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
+        }
+        .focus-subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            letter-spacing: 0.1em;
+            margin-bottom: 22px;
+        }
+        .focus-providers h4 {
+            font-family: var(--display);
+            font-weight: 400;
+            font-style: italic;
+            color: var(--accent);
+            font-size: 14px;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            text-transform: lowercase;
+        }
+        .focus-loading {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .focus-loading .reel { font-size: 32px; display: inline-block; animation: spin 2s linear infinite; }
     </style>
 </head>
 <body>
@@ -1117,6 +1494,29 @@
             <h1 class="title">Find your <em>next watch</em>.</h1>
             <p class="tagline">Seven questions. A handful of curated picks. No algorithms pretending to know you.</p>
         </header>
+
+        <!-- v4: Search bar -->
+        <section class="search-section" id="search-section">
+            <p class="search-eyebrow">Already know what you want to watch?</p>
+            <div class="search-bar">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input
+                    type="text"
+                    id="search-input"
+                    class="search-input"
+                    placeholder="Search any movie, series, or person…"
+                    autocomplete="off"
+                    aria-label="Search movies, series, and people"
+                    aria-autocomplete="list"
+                    aria-controls="search-dropdown"
+                />
+                <div class="search-loader hidden" id="search-loader" aria-hidden="true"></div>
+                <button class="search-clear hidden" id="search-clear" type="button" aria-label="Clear search">×</button>
+                <div class="search-dropdown" id="search-dropdown" role="listbox"></div>
+            </div>
+        </section>
+
+        <div class="search-divider"><span>or take the quiz</span></div>
 
         <!-- Survey stage -->
         <section id="survey-stage" class="survey-card" aria-labelledby="question-label">
@@ -1204,6 +1604,27 @@
         </div>
     </div>
 
+    <!-- v4: Focused popup (search results — providers only) -->
+    <div class="focus-backdrop" id="focus-backdrop" role="dialog" aria-modal="true" aria-labelledby="focus-title">
+        <div class="focus-popup">
+            <button class="focus-close" id="focus-close" type="button" aria-label="Close">×</button>
+            <div class="focus-hero" id="focus-hero">
+                <div class="focus-hero-fallback">🎬</div>
+            </div>
+            <div class="focus-body">
+                <div class="focus-person-hint hidden" id="focus-person-hint"></div>
+                <h3 class="focus-title" id="focus-title"></h3>
+                <p class="focus-subtitle" id="focus-subtitle"></p>
+                <div class="focus-providers">
+                    <h4>where to watch</h4>
+                    <div id="focus-providers-content">
+                        <div class="focus-loading"><span class="reel">🎞️</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     /* =========================================================
        Configuration
@@ -1233,25 +1654,41 @@
         },
         // Some useful TMDB keyword IDs
         KEYWORDS: {
-            TRUE_STORY: '9672',           // based on a true story
             HORROR_VIBE: '9663',          // horror keyword (works for TV when genre missing)
+            // v4 additions
+            SLOW_BURN: '283091',          // slow-burn / slow paced
+            FAST_PACED: '180547',         // action-packed / fast paced
+            HISTORICAL: '4344',           // period drama / historical
+            FANTASY_WORLD: '15009',       // fantasy world / magic
+            FUTURE: '4565',               // futuristic
+            LIMITED_SERIES: '253193'      // miniseries / limited series
         },
 
         QUESTIONS: [
             { key: 'kind',     q: 'Are you in the mood for a film, or a series?',
-              opts: [['Movies','🎬'], ['Series','📺']] },
+              opts: [['Movies','🎬'], ['Series','📺']],
+              showIf: () => true },
             { key: 'genre',    q: 'What kind of story tonight?',
-              opts: [['Action','⚔️'],['Comedy','😄'],['Drama','🎭'],['Horror','👁️'],['Sci-Fi','🚀'],['Romance','💌']] },
+              opts: [['Action','⚔️'],['Comedy','😄'],['Drama','🎭'],['Horror','👁️'],['Sci-Fi','🚀'],['Romance','💌']],
+              showIf: () => true },
             { key: 'era',      q: 'New releases or older classics?',
-              opts: [['New Releases','✨'],['Classics','🕰️'],['No preference','🎲']] },
-            { key: 'length',   q: 'How much time do you have?',
-              opts: [['Less than 1 hour','⚡'],['1–2 hours','🕐'],['More than 2 hours','🕰️'],['No preference','🎲']] },
-            { key: 'ending',   q: 'Do you want a happy ending?',
-              opts: [['Yes, lift my spirits','☀️'],['No, I want catharsis','🌧️'],['No preference','🎲']] },
+              opts: [['New Releases','✨'],['Classics','🕰️'],['No preference','🎲']],
+              showIf: () => true },
+            // Q4: Length — only shown for Series
+            { key: 'length',   q: 'What kind of series?',
+              opts: [['Limited series (1 season)','📺'],['Multi-season','📚'],['No preference','🎲']],
+              showIf: (a) => a.kind === 'Series' },
+            // Q5: Pace — replaces "happy ending"
+            { key: 'pace',     q: 'What pace are you after?',
+              opts: [['Slow burn','🌙'],['Steady','🎵'],['Fast-paced','⚡'],['No preference','🎲']],
+              showIf: () => true },
             { key: 'mood',     q: 'What mood are you chasing?',
-              opts: [['Exciting','🔥'],['Chilling','🥶'],['Heartwarming','💛'],['Thought-provoking','🧠']] },
-            { key: 'truth',    q: 'Based on a true story?',
-              opts: [['Yes, real lives','📖'],['No, pure fiction','✨'],['No preference','🎲']] }
+              opts: [['Exciting','🔥'],['Chilling','🥶'],['Heartwarming','💛'],['Thought-provoking','🧠']],
+              showIf: () => true },
+            // Q7: Setting — replaces "true story"
+            { key: 'setting',  q: 'What kind of setting?',
+              opts: [['Modern day','🏙️'],['Historical','🏛️'],['Fantasy world','🐉'],['No preference','🎲']],
+              showIf: () => true }
         ]
     };
 
@@ -1309,7 +1746,19 @@
         modalHeartText: $('modal-heart-text'),
         castContent: $('cast-content'),
         similarContent: $('similar-content'),
-        confettiCanvas: $('confetti-canvas')
+        confettiCanvas: $('confetti-canvas'),
+        // v4 additions
+        searchInput: $('search-input'),
+        searchDropdown: $('search-dropdown'),
+        searchClear: $('search-clear'),
+        searchLoader: $('search-loader'),
+        focusBackdrop: $('focus-backdrop'),
+        focusClose: $('focus-close'),
+        focusHero: $('focus-hero'),
+        focusTitle: $('focus-title'),
+        focusSubtitle: $('focus-subtitle'),
+        focusPersonHint: $('focus-person-hint'),
+        focusProvidersContent: $('focus-providers-content')
     };
 
     /* =========================================================
@@ -1328,8 +1777,9 @@
             if (!raw) return;
             const data = JSON.parse(raw);
             if (data && typeof data.index === 'number' && data.answers) {
-                state.index = Math.min(data.index, CONFIG.QUESTIONS.length - 1);
                 state.answers = data.answers;
+                state.index = data.index;
+                reconcileAnswers(); // v4: ensure index/answers valid for current visible set
             }
         } catch (_) { /* ignore */ }
     }
@@ -1367,10 +1817,40 @@
     }
 
     /* =========================================================
+       v4: Adaptive question flow helpers
+       =========================================================
+       Questions can be conditionally shown based on previous answers.
+       getVisibleQuestions() returns only the questions that should be
+       shown given current answers. The "step" the user sees in the
+       progress bar refers to position within visible questions.
+       ========================================================= */
+    function getVisibleQuestions() {
+        return CONFIG.QUESTIONS.filter(q => !q.showIf || q.showIf(state.answers));
+    }
+    function getCurrentQuestion() {
+        const visible = getVisibleQuestions();
+        return visible[state.index] || null;
+    }
+    function getTotalSteps() {
+        return getVisibleQuestions().length;
+    }
+    // When answers change in a way that hides current/past questions,
+    // clean up orphaned answers and ensure index is valid.
+    function reconcileAnswers() {
+        const visible = getVisibleQuestions();
+        const visibleKeys = new Set(visible.map(q => q.key));
+        Object.keys(state.answers).forEach(k => {
+            if (!visibleKeys.has(k)) delete state.answers[k];
+        });
+        if (state.index >= visible.length) state.index = Math.max(0, visible.length - 1);
+    }
+
+    /* =========================================================
        Survey rendering
        ========================================================= */
     function renderQuestion() {
-        const q = CONFIG.QUESTIONS[state.index];
+        const q = getCurrentQuestion();
+        if (!q) return; // safety
         els.questionLabel.textContent = q.q;
         els.options.innerHTML = '';
         els.validation.classList.remove('show');
@@ -1401,13 +1881,11 @@
 
         // Re-trigger entry animation
         els.questionBlock.style.animation = 'none';
-        // Force reflow
-        // eslint-disable-next-line no-unused-expressions
         els.questionBlock.offsetHeight;
         els.questionBlock.style.animation = '';
 
-        // Progress
-        const total = CONFIG.QUESTIONS.length;
+        // Progress (uses adaptive total)
+        const total = getTotalSteps();
         const stepNum = state.index + 1;
         els.progressStep.textContent = String(stepNum).padStart(2, '0');
         els.progressTotal.textContent = String(total).padStart(2, '0');
@@ -1427,7 +1905,14 @@
     }
 
     function selectOption(key, label) {
+        const previousAnswer = state.answers[key];
         state.answers[key] = label;
+
+        // v4: If user changed their "kind" answer, the visible question set may shift
+        if (key === 'kind' && previousAnswer !== label) {
+            reconcileAnswers();
+        }
+
         saveSession();
         soundClick();
         // Apply genre tint when user picks a genre
@@ -1448,12 +1933,14 @@
     }
 
     function handleNext() {
-        const q = CONFIG.QUESTIONS[state.index];
+        const q = getCurrentQuestion();
+        if (!q) return;
         if (!state.answers[q.key]) {
             showValidation('Pick one to continue.');
             return;
         }
-        if (state.index < CONFIG.QUESTIONS.length - 1) {
+        const total = getTotalSteps();
+        if (state.index < total - 1) {
             state.index++;
             saveSession();
             renderQuestion();
@@ -1485,12 +1972,19 @@
             page: '1'
         });
 
+        // Helper: append a keyword to with_keywords (CSV)
+        const addKeyword = (id) => {
+            if (!id) return;
+            const existing = params.get('with_keywords');
+            const merged = existing ? `${existing},${id}` : id;
+            params.set('with_keywords', merged);
+        };
+
         // Genre
         const genreId = CONFIG.GENRES[a.kind][a.genre];
         if (genreId) params.append('with_genres', String(genreId));
-        // Series + Horror has no native genre — use horror keyword instead
         if (!isMovie && a.genre === 'Horror') {
-            params.append('with_keywords', CONFIG.KEYWORDS.HORROR_VIBE);
+            addKeyword(CONFIG.KEYWORDS.HORROR_VIBE);
         }
 
         // Era — use correct date param per content type
@@ -1502,23 +1996,25 @@
             params.append(`${dateField}.lte`, `${currentYear - CONFIG.CLASSIC_YEARS}-12-31`);
         }
 
-        // Runtime — only for movies (TV runtime is per-episode, unreliable)
-        if (isMovie) {
-            if (a.length === 'Less than 1 hour') {
-                params.append('with_runtime.lte', '60');
-            } else if (a.length === '1–2 hours') {
-                params.append('with_runtime.gte', '60');
-                params.append('with_runtime.lte', '120');
-            } else if (a.length === 'More than 2 hours') {
-                params.append('with_runtime.gte', '120');
-            }
+        // v4: Length — only applies to Series now. We'll re-rank post-fetch since
+        // TMDB's discover API doesn't support filtering by season count directly.
+        // For limited series we can use the keyword as a hint.
+        if (!isMovie && a.length === 'Limited series (1 season)') {
+            addKeyword(CONFIG.KEYWORDS.LIMITED_SERIES);
         }
 
-        // Truth — based on true story keyword
-        if (a.truth === 'Yes, real lives') {
-            const existing = params.get('with_keywords');
-            const merged = existing ? `${existing},${CONFIG.KEYWORDS.TRUE_STORY}` : CONFIG.KEYWORDS.TRUE_STORY;
-            params.set('with_keywords', merged);
+        // v4: Pace — keyword hints
+        if (a.pace === 'Slow burn') {
+            addKeyword(CONFIG.KEYWORDS.SLOW_BURN);
+        } else if (a.pace === 'Fast-paced') {
+            addKeyword(CONFIG.KEYWORDS.FAST_PACED);
+        }
+
+        // v4: Setting — keyword hints
+        if (a.setting === 'Historical') {
+            addKeyword(CONFIG.KEYWORDS.HISTORICAL);
+        } else if (a.setting === 'Fantasy world') {
+            addKeyword(CONFIG.KEYWORDS.FANTASY_WORLD);
         }
 
         return { params, isMovie };
@@ -1537,15 +2033,35 @@
         }
     }
 
-    function endingPenalty(ending, genreIds) {
+    // v4: Pace ranking signal based on genres
+    function paceBoost(pace, genreIds) {
         const ids = (genreIds || []).map(Number);
-        if (ending === 'Yes, lift my spirits') {
-            // light penalty for tragedy-leaning genres
-            if (ids.includes(27) || ids.includes(10752)) return -2; // horror, war
-            if (ids.includes(35) || ids.includes(10749) || ids.includes(10751)) return +2; // comedy, romance, family
-        } else if (ending === 'No, I want catharsis') {
-            if (ids.includes(18) || ids.includes(10752) || ids.includes(80)) return +2; // drama, war, crime
-            if (ids.includes(35) || ids.includes(10751)) return -1;
+        if (!pace || pace === 'No preference') return 0;
+        if (pace === 'Slow burn') {
+            if (ids.includes(18) || ids.includes(9648) || ids.includes(36)) return +3; // drama/mystery/history
+            if (ids.includes(28) || ids.includes(10759)) return -2;                    // action
+        } else if (pace === 'Fast-paced') {
+            if (ids.includes(28) || ids.includes(53) || ids.includes(12) || ids.includes(10759)) return +3;
+            if (ids.includes(18) || ids.includes(99)) return -2;                       // drama/doc
+        } else if (pace === 'Steady') {
+            if (ids.includes(35) || ids.includes(18) || ids.includes(10751)) return +1;
+        }
+        return 0;
+    }
+
+    // v4: Setting ranking signal
+    function settingBoost(setting, genreIds) {
+        const ids = (genreIds || []).map(Number);
+        if (!setting || setting === 'No preference') return 0;
+        if (setting === 'Historical') {
+            if (ids.includes(36) || ids.includes(10752)) return +3;                    // history/war
+            if (ids.includes(878)) return -2;                                          // sci-fi
+        } else if (setting === 'Fantasy world') {
+            if (ids.includes(14) || ids.includes(878) || ids.includes(16)) return +3;  // fantasy/sci-fi/animation
+            if (ids.includes(36) || ids.includes(99)) return -2;                       // history/doc
+        } else if (setting === 'Modern day') {
+            if (ids.includes(36) || ids.includes(14) || ids.includes(37)) return -1;   // history/fantasy/western
+            if (ids.includes(35) || ids.includes(18) || ids.includes(53)) return +1;
         }
         return 0;
     }
@@ -1556,7 +2072,8 @@
             let score = item.popularity || 0;
             const genreIds = item.genre_ids || [];
             if (a.mood && moodMatchesGenre(a.mood, genreIds)) score += 20;
-            score += endingPenalty(a.ending, genreIds);
+            score += paceBoost(a.pace, genreIds);
+            score += settingBoost(a.setting, genreIds);
             return { ...item, _score: score };
         }).sort((x, y) => y._score - x._score);
     }
@@ -1701,9 +2218,14 @@
         if (a.mood && moodMatchesGenre(a.mood, genreIds)) {
             bits.push(`matches your ${a.mood.toLowerCase()} mood`);
         }
+        if (a.pace && a.pace !== 'No preference' && paceBoost(a.pace, genreIds) > 0) {
+            bits.push(`${a.pace.toLowerCase()} pace`);
+        }
+        if (a.setting && a.setting !== 'No preference' && settingBoost(a.setting, genreIds) > 0) {
+            bits.push(`${a.setting.toLowerCase()} setting`);
+        }
         if (a.era === 'Classics') bits.push('a classic pick');
         else if (a.era === 'New Releases') bits.push('recent release');
-        if (a.truth === 'Yes, real lives') bits.push('inspired by real events');
         if (item.vote_average && item.vote_average >= 7.5) bits.push('highly rated');
         return bits.length ? `— ${bits.slice(0, 2).join(', ')}` : '';
     }
@@ -2219,12 +2741,18 @@
        ========================================================= */
     function surpriseMe() {
         soundClick();
-        // Pick a random option for each question
-        CONFIG.QUESTIONS.forEach(q => {
-            const choice = q.opts[Math.floor(Math.random() * q.opts.length)][0];
-            state.answers[q.key] = choice;
+        // Pick a random kind first so showIf evaluates correctly
+        state.answers = {};
+        const kindQ = CONFIG.QUESTIONS.find(q => q.key === 'kind');
+        state.answers.kind = kindQ.opts[Math.floor(Math.random() * kindQ.opts.length)][0];
+        // Then fill in only the visible questions given that choice
+        const visible = getVisibleQuestions();
+        visible.forEach(q => {
+            if (!state.answers[q.key]) {
+                state.answers[q.key] = q.opts[Math.floor(Math.random() * q.opts.length)][0];
+            }
         });
-        state.index = CONFIG.QUESTIONS.length - 1;
+        state.index = visible.length - 1;
         saveSession();
         applyGenreTint(state.answers.genre);
         runRecommendations();
@@ -2251,6 +2779,413 @@
     let firstResultsShown = false;
 
     /* =========================================================
+       v4: SEARCH BAR (TMDB /search/multi with debounce)
+       ========================================================= */
+    const RECENT_SEARCHES_KEY = 'cinematch:recent_searches';
+    const RECENT_LIMIT = 5;
+    let searchDebounceTimer = null;
+    let searchAbortController = null;
+    let searchActiveIndex = -1;
+    let searchSuggestions = []; // current displayed list
+
+    function getRecentSearches() {
+        try { return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]'); }
+        catch (_) { return []; }
+    }
+    function saveRecentSearch(term) {
+        if (!term || term.length < 2) return;
+        let list = getRecentSearches().filter(t => t.toLowerCase() !== term.toLowerCase());
+        list.unshift(term);
+        list = list.slice(0, RECENT_LIMIT);
+        try { localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(list)); }
+        catch (_) {}
+    }
+    function clearRecentSearches() {
+        try { localStorage.removeItem(RECENT_SEARCHES_KEY); }
+        catch (_) {}
+        renderRecentSearches();
+    }
+
+    function showDropdown() {
+        els.searchDropdown.classList.add('active');
+    }
+    function hideDropdown() {
+        els.searchDropdown.classList.remove('active');
+        searchActiveIndex = -1;
+    }
+
+    function renderRecentSearches() {
+        const list = getRecentSearches();
+        if (!list.length) {
+            hideDropdown();
+            return;
+        }
+        const html = `
+            <div class="dropdown-section-label">Recent searches</div>
+            ${list.map((term, i) => `
+                <button class="suggestion" data-recent="${i}" type="button">
+                    <div class="thumb placeholder">🕒</div>
+                    <div class="suggestion-info">
+                        <div class="suggestion-title">${escapeHtml(term)}</div>
+                    </div>
+                </button>
+            `).join('')}
+            <button class="recent-clear" type="button">Clear recent</button>
+        `;
+        els.searchDropdown.innerHTML = html;
+        // Wire up recent items
+        els.searchDropdown.querySelectorAll('[data-recent]').forEach((el) => {
+            const idx = parseInt(el.getAttribute('data-recent'), 10);
+            el.addEventListener('click', () => {
+                els.searchInput.value = list[idx];
+                triggerSearch(list[idx]);
+            });
+        });
+        const clearBtn = els.searchDropdown.querySelector('.recent-clear');
+        if (clearBtn) clearBtn.addEventListener('click', clearRecentSearches);
+        searchSuggestions = [];
+        searchActiveIndex = -1;
+        showDropdown();
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, ch => ({
+            '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+        }[ch]));
+    }
+
+    function renderSuggestions(items, query) {
+        if (!items.length) {
+            els.searchDropdown.innerHTML = `
+                <div class="dropdown-empty">
+                    No matches for "${escapeHtml(query)}".<br>
+                    Try a different title.
+                </div>`;
+            searchSuggestions = [];
+            showDropdown();
+            return;
+        }
+
+        const html = items.map((item, i) => {
+            const isPerson = item.media_type === 'person';
+            const isMovie = item.media_type === 'movie';
+            const title = isPerson ? item.name
+                       : isMovie ? item.title
+                       : item.name;
+            const dateStr = isMovie ? item.release_date : item.first_air_date;
+            const year = dateStr ? new Date(dateStr).getFullYear() : null;
+            const rating = (!isPerson && item.vote_average) ? item.vote_average.toFixed(1) : null;
+            const overview = isPerson
+                ? (item.known_for_department ? `Known for ${item.known_for_department}` : '')
+                : (item.overview || '');
+            const posterPath = isPerson ? item.profile_path : item.poster_path;
+            const typeLabel = isPerson ? 'Person' : (isMovie ? 'Movie' : 'Series');
+
+            const thumbHtml = posterPath
+                ? `<img class="thumb${isPerson ? ' person' : ''}" src="${CONFIG.IMG_BASE}/w185${posterPath}" alt="" loading="lazy">`
+                : `<div class="thumb${isPerson ? ' person' : ''} placeholder">${isPerson ? '👤' : '🎬'}</div>`;
+
+            const metaParts = [`<span class="type-tag">${typeLabel}</span>`];
+            if (year) metaParts.push(year);
+            if (rating) metaParts.push(`★ ${rating}`);
+
+            return `
+                <button class="suggestion" data-idx="${i}" type="button" role="option">
+                    ${thumbHtml}
+                    <div class="suggestion-info">
+                        <div class="suggestion-title">${escapeHtml(title)}</div>
+                        <div class="suggestion-meta">${metaParts.join(' · ')}</div>
+                        ${overview ? `<div class="suggestion-overview">${escapeHtml(overview)}</div>` : ''}
+                    </div>
+                </button>
+            `;
+        }).join('');
+
+        els.searchDropdown.innerHTML = html;
+        searchSuggestions = items;
+        searchActiveIndex = -1;
+
+        // Wire click handlers
+        els.searchDropdown.querySelectorAll('[data-idx]').forEach(el => {
+            const idx = parseInt(el.getAttribute('data-idx'), 10);
+            el.addEventListener('click', () => {
+                saveRecentSearch(query);
+                handleSuggestionClick(items[idx]);
+            });
+        });
+
+        showDropdown();
+    }
+
+    async function performSearch(query) {
+        // Cancel any in-flight search
+        if (searchAbortController) searchAbortController.abort();
+        searchAbortController = new AbortController();
+
+        els.searchLoader.classList.remove('hidden');
+        try {
+            const url = `${CONFIG.API_BASE}/search/multi?api_key=${CONFIG.API_KEY}&language=en-US&query=${encodeURIComponent(query)}&page=1&include_adult=false`;
+            const resp = await fetch(url, { signal: searchAbortController.signal });
+            if (!resp.ok) throw new Error('Search failed');
+            const data = await resp.json();
+            // Filter to only movie / tv / person, take top 6
+            const filtered = (data.results || [])
+                .filter(r => ['movie', 'tv', 'person'].includes(r.media_type))
+                .slice(0, 6);
+            els.searchLoader.classList.add('hidden');
+            renderSuggestions(filtered, query);
+        } catch (err) {
+            if (err.name === 'AbortError') return; // expected when typing fast
+            console.error('Search error:', err);
+            els.searchLoader.classList.add('hidden');
+            els.searchDropdown.innerHTML = `<div class="dropdown-empty">Search unavailable. Please try again.</div>`;
+            showDropdown();
+        }
+    }
+
+    function triggerSearch(query) {
+        if (!query || query.trim().length < 2) {
+            els.searchLoader.classList.add('hidden');
+            renderRecentSearches();
+            return;
+        }
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => performSearch(query.trim()), 300);
+    }
+
+    function onSearchInput() {
+        const v = els.searchInput.value;
+        els.searchClear.classList.toggle('hidden', !v);
+        triggerSearch(v);
+    }
+
+    function onSearchKeyDown(e) {
+        if (!els.searchDropdown.classList.contains('active')) return;
+        const items = els.searchDropdown.querySelectorAll('.suggestion');
+        if (!items.length) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            searchActiveIndex = Math.min(searchActiveIndex + 1, items.length - 1);
+            updateActiveSuggestion(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            searchActiveIndex = Math.max(searchActiveIndex - 1, 0);
+            updateActiveSuggestion(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (searchActiveIndex >= 0 && items[searchActiveIndex]) {
+                items[searchActiveIndex].click();
+            } else if (items.length > 0) {
+                items[0].click();
+            }
+        } else if (e.key === 'Escape') {
+            hideDropdown();
+            els.searchInput.blur();
+        }
+    }
+
+    function updateActiveSuggestion(items) {
+        items.forEach((el, i) => el.classList.toggle('active', i === searchActiveIndex));
+        if (searchActiveIndex >= 0 && items[searchActiveIndex]) {
+            items[searchActiveIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function clearSearchInput() {
+        els.searchInput.value = '';
+        els.searchClear.classList.add('hidden');
+        els.searchLoader.classList.add('hidden');
+        clearTimeout(searchDebounceTimer);
+        if (searchAbortController) searchAbortController.abort();
+        renderRecentSearches();
+        els.searchInput.focus();
+    }
+
+    /* =========================================================
+       v4: Handle suggestion click — route by media type
+       ========================================================= */
+    async function handleSuggestionClick(item) {
+        hideDropdown();
+        els.searchInput.blur();
+
+        if (item.media_type === 'person') {
+            // Resolve to most popular movie of this person
+            await openFocusedPopupForPerson(item);
+        } else {
+            // Movie or TV → open focused popup directly
+            const isMovie = item.media_type === 'movie';
+            openFocusedPopup({
+                id: item.id,
+                title: isMovie ? item.title : item.name,
+                year: (() => {
+                    const d = isMovie ? item.release_date : item.first_air_date;
+                    return d ? new Date(d).getFullYear() : null;
+                })(),
+                rating: item.vote_average || null,
+                poster: item.backdrop_path || item.poster_path,
+                isMovie
+            });
+        }
+    }
+
+    async function openFocusedPopupForPerson(person) {
+        // Show popup with loading state and person hint
+        showFocusBackdrop();
+        els.focusPersonHint.classList.remove('hidden');
+        els.focusPersonHint.textContent = `Showing: most popular work by ${person.name}`;
+        els.focusTitle.textContent = 'Loading…';
+        els.focusSubtitle.textContent = '';
+        els.focusHero.innerHTML = `<div class="focus-hero-fallback">👤</div>`;
+        els.focusProvidersContent.innerHTML = `<div class="focus-loading"><span class="reel">🎞️</span></div>`;
+
+        try {
+            // Fetch person's combined credits, find their most popular movie
+            const url = `${CONFIG.API_BASE}/person/${person.id}/movie_credits?api_key=${CONFIG.API_KEY}&language=en-US`;
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error('Person credits failed');
+            const data = await resp.json();
+            const cast = (data.cast || []).filter(c => c.poster_path);
+            if (!cast.length) {
+                els.focusTitle.textContent = person.name;
+                els.focusSubtitle.textContent = 'No movies found';
+                els.focusProvidersContent.innerHTML = '<div class="providers-empty">No films available to show providers for.</div>';
+                return;
+            }
+            // Sort by popularity
+            cast.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+            const top = cast[0];
+            // Now open focused popup for that movie, but keep the person hint
+            populateFocusedPopup({
+                id: top.id,
+                title: top.title,
+                year: top.release_date ? new Date(top.release_date).getFullYear() : null,
+                rating: top.vote_average || null,
+                poster: top.backdrop_path || top.poster_path,
+                isMovie: true
+            });
+        } catch (err) {
+            console.error(err);
+            els.focusTitle.textContent = person.name;
+            els.focusSubtitle.textContent = 'Could not load filmography';
+            els.focusProvidersContent.innerHTML = '<div class="providers-empty">Unable to fetch information.</div>';
+        }
+    }
+
+    function showFocusBackdrop() {
+        els.focusBackdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function openFocusedPopup(meta) {
+        showFocusBackdrop();
+        els.focusPersonHint.classList.add('hidden');
+        populateFocusedPopup(meta);
+    }
+
+    async function populateFocusedPopup(meta) {
+        // meta: { id, title, year, rating, poster, isMovie }
+        els.focusTitle.textContent = meta.title;
+        const subParts = [];
+        if (meta.year) subParts.push(meta.year);
+        subParts.push(meta.isMovie ? 'Film' : 'Series');
+        if (meta.rating) subParts.push(`★ ${meta.rating.toFixed(1)}`);
+        els.focusSubtitle.textContent = subParts.join(' · ');
+
+        // Hero image
+        if (meta.poster) {
+            els.focusHero.innerHTML = `<img src="${CONFIG.IMG_BASE}/w780${meta.poster}" alt="" loading="lazy">`;
+        } else {
+            els.focusHero.innerHTML = `<div class="focus-hero-fallback">🎬</div>`;
+        }
+
+        // Loading providers
+        els.focusProvidersContent.innerHTML = `<div class="focus-loading"><span class="reel">🎞️</span></div>`;
+
+        // Fetch providers
+        const endpoint = meta.isMovie ? 'movie' : 'tv';
+        try {
+            const resp = await fetch(`${CONFIG.API_BASE}/${endpoint}/${meta.id}/watch/providers?api_key=${CONFIG.API_KEY}`);
+            if (!resp.ok) throw new Error();
+            const data = await resp.json();
+            const regions = data.results || {};
+            const userLocale = (navigator.language || 'en-US').split('-')[1] || 'US';
+            const region = regions[userLocale] || regions.US || regions.GB || Object.values(regions)[0];
+            renderFocusedProviders(region);
+        } catch (_) {
+            els.focusProvidersContent.innerHTML = '<div class="providers-empty">Provider info unavailable.</div>';
+        }
+    }
+
+    function renderFocusedProviders(region) {
+        if (!region || (!region.flatrate && !region.free && !region.ads && !region.rent && !region.buy)) {
+            els.focusProvidersContent.innerHTML = '<div class="providers-empty">Not currently available on tracked streaming services.</div>';
+            return;
+        }
+        const wrap = document.createElement('div');
+
+        const sections = [
+            { key: 'flatrate', label: 'Stream' },
+            { key: 'free',     label: 'Free' },
+            { key: 'ads',      label: 'With ads' },
+            { key: 'rent',     label: 'Rent' },
+            { key: 'buy',      label: 'Buy' }
+        ];
+
+        sections.forEach(s => {
+            const list = region[s.key];
+            if (!list || !list.length) return;
+            const seen = new Set();
+            const unique = list.filter(p => { if (seen.has(p.provider_id)) return false; seen.add(p.provider_id); return true; });
+            const sectionDiv = document.createElement('div');
+            sectionDiv.style.marginBottom = '14px';
+            const label = document.createElement('div');
+            label.style.fontSize = '11px';
+            label.style.letterSpacing = '0.15em';
+            label.style.textTransform = 'uppercase';
+            label.style.color = 'var(--text-muted)';
+            label.style.marginBottom = '8px';
+            label.textContent = s.label;
+            sectionDiv.appendChild(label);
+
+            const chips = document.createElement('div');
+            chips.className = 'providers-list';
+            unique.slice(0, 8).forEach(p => {
+                const chip = document.createElement('span');
+                chip.className = 'provider-chip';
+                if (p.logo_path) {
+                    const img = document.createElement('img');
+                    img.src = `${CONFIG.IMG_BASE}/w92${p.logo_path}`;
+                    img.alt = '';
+                    chip.appendChild(img);
+                }
+                const name = document.createElement('span');
+                name.textContent = p.provider_name;
+                chip.appendChild(name);
+                chips.appendChild(chip);
+            });
+            sectionDiv.appendChild(chips);
+            wrap.appendChild(sectionDiv);
+        });
+
+        if (region.link) {
+            const linkRow = document.createElement('div');
+            linkRow.style.marginTop = '12px';
+            linkRow.style.fontSize = '12px';
+            linkRow.innerHTML = `<a href="${region.link}" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">Open on TMDB →</a>`;
+            wrap.appendChild(linkRow);
+        }
+
+        els.focusProvidersContent.innerHTML = '';
+        els.focusProvidersContent.appendChild(wrap);
+    }
+
+    function closeFocusedPopup() {
+        els.focusBackdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    /* =========================================================
        Wire it up
        ========================================================= */
     els.btnNext.addEventListener('click', handleNext);
@@ -2275,6 +3210,33 @@
 
     // v3: Surprise me
     els.btnSurprise.addEventListener('click', surpriseMe);
+
+    // v4: Search bar
+    els.searchInput.addEventListener('input', onSearchInput);
+    els.searchInput.addEventListener('keydown', onSearchKeyDown);
+    els.searchInput.addEventListener('focus', () => {
+        if (!els.searchInput.value) renderRecentSearches();
+    });
+    els.searchClear.addEventListener('click', clearSearchInput);
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const sec = document.getElementById('search-section');
+        if (sec && !sec.contains(e.target)) hideDropdown();
+    });
+
+    // v4: Focused popup
+    els.focusClose.addEventListener('click', closeFocusedPopup);
+    els.focusBackdrop.addEventListener('click', (e) => {
+        if (e.target === els.focusBackdrop) closeFocusedPopup();
+    });
+
+    // v4: Extend Escape key handler to close focused popup too
+    // (existing keydown handler covers modal & drawer; add focused popup)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && els.focusBackdrop.classList.contains('active')) {
+            closeFocusedPopup();
+        }
+    });
 
     // Boot
     loadSession();
