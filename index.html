@@ -1972,19 +1972,13 @@
             page: '1'
         });
 
-        // Helper: append a keyword to with_keywords (CSV)
-        const addKeyword = (id) => {
-            if (!id) return;
-            const existing = params.get('with_keywords');
-            const merged = existing ? `${existing},${id}` : id;
-            params.set('with_keywords', merged);
-        };
-
-        // Genre
+        // Genre (with TV horror fallback to mystery genre since TV has no horror)
         const genreId = CONFIG.GENRES[a.kind][a.genre];
-        if (genreId) params.append('with_genres', String(genreId));
-        if (!isMovie && a.genre === 'Horror') {
-            addKeyword(CONFIG.KEYWORDS.HORROR_VIBE);
+        if (genreId) {
+            params.append('with_genres', String(genreId));
+        } else if (!isMovie && a.genre === 'Horror') {
+            // For TV horror, fall back to Sci-Fi & Fantasy (10765) + Mystery (9648) which best capture creepy/eerie TV
+            params.append('with_genres', '9648|10765');
         }
 
         // Era — use correct date param per content type
@@ -1996,26 +1990,9 @@
             params.append(`${dateField}.lte`, `${currentYear - CONFIG.CLASSIC_YEARS}-12-31`);
         }
 
-        // v4: Length — only applies to Series now. We'll re-rank post-fetch since
-        // TMDB's discover API doesn't support filtering by season count directly.
-        // For limited series we can use the keyword as a hint.
-        if (!isMovie && a.length === 'Limited series (1 season)') {
-            addKeyword(CONFIG.KEYWORDS.LIMITED_SERIES);
-        }
-
-        // v4: Pace — keyword hints
-        if (a.pace === 'Slow burn') {
-            addKeyword(CONFIG.KEYWORDS.SLOW_BURN);
-        } else if (a.pace === 'Fast-paced') {
-            addKeyword(CONFIG.KEYWORDS.FAST_PACED);
-        }
-
-        // v4: Setting — keyword hints
-        if (a.setting === 'Historical') {
-            addKeyword(CONFIG.KEYWORDS.HISTORICAL);
-        } else if (a.setting === 'Fantasy world') {
-            addKeyword(CONFIG.KEYWORDS.FANTASY_WORLD);
-        }
+        // Note: pace, setting, and length influence post-fetch ranking, not the
+        // initial query. This guarantees we always get results — bad keyword
+        // combinations were returning zero matches previously.
 
         return { params, isMovie };
     }
@@ -2089,10 +2066,43 @@
         try {
             const { params, isMovie } = buildDiscoverParams();
             const endpoint = isMovie ? 'discover/movie' : 'discover/tv';
-            const resp = await fetch(`${CONFIG.API_BASE}/${endpoint}?${params.toString()}`);
+            let resp = await fetch(`${CONFIG.API_BASE}/${endpoint}?${params.toString()}`);
             if (!resp.ok) throw new Error('TMDB request failed: ' + resp.status);
-            const data = await resp.json();
-            const ranked = rankResults(data.results || []).slice(0, CONFIG.RESULTS_LIMIT);
+            let data = await resp.json();
+            let results = data.results || [];
+
+            // Fallback 1: if no results, retry without era filter (date constraints can be too strict)
+            if (!results.length) {
+                console.log('No results — retrying without era filter');
+                const fallback = new URLSearchParams(params);
+                const dateField = isMovie ? 'primary_release_date' : 'first_air_date';
+                fallback.delete(`${dateField}.gte`);
+                fallback.delete(`${dateField}.lte`);
+                resp = await fetch(`${CONFIG.API_BASE}/${endpoint}?${fallback.toString()}`);
+                if (resp.ok) {
+                    data = await resp.json();
+                    results = data.results || [];
+                }
+            }
+
+            // Fallback 2: still nothing — fetch top popular of that kind
+            if (!results.length) {
+                console.log('Still no results — falling back to popular');
+                const minimal = new URLSearchParams({
+                    api_key: CONFIG.API_KEY,
+                    language: 'en-US',
+                    sort_by: 'popularity.desc',
+                    'vote_count.gte': '50',
+                    page: '1'
+                });
+                resp = await fetch(`${CONFIG.API_BASE}/${endpoint}?${minimal.toString()}`);
+                if (resp.ok) {
+                    data = await resp.json();
+                    results = data.results || [];
+                }
+            }
+
+            const ranked = rankResults(results).slice(0, CONFIG.RESULTS_LIMIT);
             state.results = ranked.map(r => ({ ...r, __isMovie: isMovie }));
             renderResults();
         } catch (err) {
