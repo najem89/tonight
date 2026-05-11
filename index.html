@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cinematch — Find Your Next Watch</title>
-    <meta name="description" content="A cinematic recommendation engine that learns your mood and finds the perfect movie or series.">
+    <title>Tonight — Your curated movie & series guide</title>
+    <meta name="description" content="Tonight's pick is... a curated movie and series recommendation guide that learns your mood and finds something worth watching.">
 
     <!-- Open Graph / social meta -->
-    <meta property="og:title" content="Cinematch — Find Your Next Watch">
-    <meta property="og:description" content="Answer 7 quick questions. Get curated movie & series recommendations with trailers and streaming info.">
+    <meta property="og:title" content="Tonight — Your curated movie & series guide">
+    <meta property="og:description" content="Answer 7 quick questions or search any title. Get curated picks with trailers, cast, and where to watch.">
     <meta property="og:type" content="website">
 
     <!-- Favicon (inline SVG) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
 
     <!-- Fonts: Fraunces (display, editorial) + Inter Tight (body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -138,6 +138,8 @@
         h1.title em {
             font-style: italic;
             color: var(--accent);
+            font-weight: 400;
+            text-shadow: 0 0 32px rgba(212, 165, 116, 0.35);
         }
         .tagline {
             margin-top: 12px;
@@ -459,6 +461,40 @@
             letter-spacing: 0.05em;
         }
         .poster-rating::before { content: '★ '; }
+
+        /* v5.2: Runtime / seasons badge (bottom of poster) */
+        .poster-info-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(10, 10, 12, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: var(--text-primary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            max-width: calc(100% - 20px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .poster-info-badge .info-icon {
+            font-size: 12px;
+            line-height: 1;
+        }
+        /* On small screens, hide the longer "seasons" word — keep just the number */
+        @media (max-width: 540px) {
+            .poster-info-badge .info-long { display: none; }
+        }
+        @media (min-width: 541px) {
+            .poster-info-badge .info-short { display: none; }
+        }
         .play-overlay {
             position: absolute;
             inset: 0;
@@ -1490,9 +1526,9 @@
 
     <main class="app">
         <header class="header">
-            <div class="logo-mark">Cinematch</div>
-            <h1 class="title">Find your <em>next watch</em>.</h1>
-            <p class="tagline">Seven questions. A handful of curated picks. No algorithms pretending to know you.</p>
+            <div class="logo-mark">Tonight</div>
+            <h1 class="title">Tonight's <em>pick</em> is…</h1>
+            <p class="tagline">A curated movie &amp; series guide for the beautifully indecisive.</p>
         </header>
 
         <!-- v4: Search bar -->
@@ -1972,13 +2008,16 @@
             page: '1'
         });
 
-        // Genre (with TV horror fallback to mystery genre since TV has no horror)
+        // Genre (with TV horror handled specially since TMDB has no TV horror genre)
         const genreId = CONFIG.GENRES[a.kind][a.genre];
         if (genreId) {
             params.append('with_genres', String(genreId));
         } else if (!isMovie && a.genre === 'Horror') {
-            // For TV horror, fall back to Sci-Fi & Fantasy (10765) + Mystery (9648) which best capture creepy/eerie TV
-            params.append('with_genres', '9648|10765');
+            // TV horror workaround: Mystery genre (9648) + horror keyword (9663)
+            // Plus exclude family/kids/reality to avoid wholesome misclassifications
+            params.append('with_genres', '9648');
+            params.append('with_keywords', '9663'); // horror keyword
+            params.append('without_genres', '10751,10762,10764'); // Family, Kids, Reality
         }
 
         // Era — use correct date param per content type
@@ -1990,9 +2029,8 @@
             params.append(`${dateField}.lte`, `${currentYear - CONFIG.CLASSIC_YEARS}-12-31`);
         }
 
-        // Note: pace, setting, and length influence post-fetch ranking, not the
-        // initial query. This guarantees we always get results — bad keyword
-        // combinations were returning zero matches previously.
+        // Note: pace, setting influence post-fetch ranking, not initial query.
+        // Length (limited vs multi-season) is handled via two-step filter in runRecommendations.
 
         return { params, isMovie };
     }
@@ -2056,6 +2094,49 @@
     }
 
     /* =========================================================
+       v5.2: Format helpers for runtime / seasons badges
+       ========================================================= */
+    function formatRuntime(minutes) {
+        if (!minutes || minutes < 1) return null;
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        if (h === 0) return `${m}m`;
+        if (m === 0) return `${h}h`;
+        return `${h}h ${m}m`;
+    }
+
+    function formatSeasons(count) {
+        if (!count || count < 1) return null;
+        return {
+            long:  count === 1 ? '1 season' : `${count} seasons`,
+            short: count === 1 ? '1S' : `${count}S`
+        };
+    }
+
+    /* =========================================================
+       v5.2: Two-step detail enrichment for results
+       Fetches each result's details to populate runtime/seasons.
+       Reuses the series-length filter results when possible to
+       avoid duplicate fetches.
+       ========================================================= */
+    async function enrichResultsWithDetails(items, isMovie) {
+        // Items may already have __details from filterByLengthForSeries.
+        // For any without details, fetch them in parallel.
+        const need = items.filter(it => !it.__details);
+        if (need.length === 0) return items;
+
+        const endpoint = isMovie ? 'movie' : 'tv';
+        const detailPromises = need.map(it =>
+            fetch(`${CONFIG.API_BASE}/${endpoint}/${it.id}?api_key=${CONFIG.API_KEY}&language=en-US`)
+                .then(r => r.ok ? r.json() : null)
+                .catch(() => null)
+        );
+        const details = await Promise.all(detailPromises);
+        need.forEach((it, i) => { it.__details = details[i]; });
+        return items;
+    }
+
+    /* =========================================================
        Recommendations flow
        ========================================================= */
     async function runRecommendations() {
@@ -2064,14 +2145,20 @@
         els.loading.classList.remove('hidden');
 
         try {
+            const a = state.answers;
             const { params, isMovie } = buildDiscoverParams();
             const endpoint = isMovie ? 'discover/movie' : 'discover/tv';
+
+            // Fetch more candidates than we'll show (20 vs final 12)
+            // so we can filter by season count for series without coming up short.
+            const candidateLimit = (!isMovie && a.length && a.length !== 'No preference') ? 20 : 12;
+
             let resp = await fetch(`${CONFIG.API_BASE}/${endpoint}?${params.toString()}`);
             if (!resp.ok) throw new Error('TMDB request failed: ' + resp.status);
             let data = await resp.json();
-            let results = data.results || [];
+            let results = (data.results || []).slice(0, candidateLimit);
 
-            // Fallback 1: if no results, retry without era filter (date constraints can be too strict)
+            // Fallback 1: if no results, retry without era filter only (keep genre!)
             if (!results.length) {
                 console.log('No results — retrying without era filter');
                 const fallback = new URLSearchParams(params);
@@ -2081,13 +2168,14 @@
                 resp = await fetch(`${CONFIG.API_BASE}/${endpoint}?${fallback.toString()}`);
                 if (resp.ok) {
                     data = await resp.json();
-                    results = data.results || [];
+                    results = (data.results || []).slice(0, candidateLimit);
                 }
             }
 
-            // Fallback 2: still nothing — fetch top popular of that kind
+            // Fallback 2: still nothing — retry with just the genre filter (drop keywords + dates)
+            // This still respects the user's primary choice instead of showing unrelated content.
             if (!results.length) {
-                console.log('Still no results — falling back to popular');
+                console.log('Still no results — minimal fallback (genre only)');
                 const minimal = new URLSearchParams({
                     api_key: CONFIG.API_KEY,
                     language: 'en-US',
@@ -2095,20 +2183,68 @@
                     'vote_count.gte': '50',
                     page: '1'
                 });
+                const baseGenreId = CONFIG.GENRES[a.kind][a.genre];
+                if (baseGenreId) {
+                    minimal.append('with_genres', String(baseGenreId));
+                } else if (!isMovie && a.genre === 'Horror') {
+                    minimal.append('with_genres', '9648'); // Mystery for TV horror
+                }
                 resp = await fetch(`${CONFIG.API_BASE}/${endpoint}?${minimal.toString()}`);
                 if (resp.ok) {
                     data = await resp.json();
-                    results = data.results || [];
+                    results = (data.results || []).slice(0, candidateLimit);
                 }
             }
 
+            // v5: Two-step filter for series — limited vs multi-season
+            if (!isMovie && a.length && a.length !== 'No preference' && results.length) {
+                results = await filterByLengthForSeries(results, a.length);
+            }
+
             const ranked = rankResults(results).slice(0, CONFIG.RESULTS_LIMIT);
+            // v5.2: Enrich final results with details (runtime/seasons) for badges
+            // This reuses any details already fetched by filterByLengthForSeries.
+            await enrichResultsWithDetails(ranked, isMovie);
             state.results = ranked.map(r => ({ ...r, __isMovie: isMovie }));
             renderResults();
         } catch (err) {
             console.error(err);
             renderError();
         }
+    }
+
+    /* =========================================================
+       v5: Two-step series length filter
+       Fetches details for each candidate to check season count
+       ========================================================= */
+    async function filterByLengthForSeries(candidates, lengthPref) {
+        // Fetch details for each candidate in parallel
+        const detailPromises = candidates.map(c =>
+            fetch(`${CONFIG.API_BASE}/tv/${c.id}?api_key=${CONFIG.API_KEY}&language=en-US`)
+                .then(r => r.ok ? r.json() : null)
+                .catch(() => null)
+        );
+        const details = await Promise.all(detailPromises);
+
+        // Attach details to each candidate (we'll reuse for the badge)
+        candidates.forEach((c, i) => { c.__details = details[i]; });
+
+        // Filter based on user's preference
+        const filtered = candidates.filter((c) => {
+            const d = c.__details;
+            if (!d) return false;
+            const seasons = d.number_of_seasons || 0;
+            const isMiniseries = (d.type === 'Miniseries') || seasons === 1;
+            if (lengthPref === 'Limited series (1 season)') {
+                return isMiniseries;
+            } else if (lengthPref === 'Multi-season') {
+                return seasons >= 2;
+            }
+            return true;
+        });
+
+        // If filter killed everything, fall back to unfiltered list
+        return filtered.length ? filtered : candidates;
     }
 
     function renderResults() {
@@ -2138,6 +2274,52 @@
             soundComplete();
             setTimeout(() => fireConfetti(), 200);
         }
+    }
+
+    /* =========================================================
+       v5.2: Build runtime/seasons info badge for poster
+       ========================================================= */
+    function buildInfoBadge(item, isMovie) {
+        const d = item.__details;
+        if (!d) return null;
+
+        let icon, longText, shortText;
+
+        if (isMovie) {
+            const formatted = formatRuntime(d.runtime);
+            if (!formatted) return null;
+            icon = '⏱';
+            longText = shortText = formatted; // movies: same on all screens
+        } else {
+            const seasons = d.number_of_seasons || 0;
+            if (seasons < 1) return null;
+            const fs = formatSeasons(seasons);
+            icon = '📺';
+            longText = fs.long;   // "5 seasons"
+            shortText = fs.short; // "5S"
+        }
+
+        const badge = document.createElement('div');
+        badge.className = 'poster-info-badge';
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'info-icon';
+        iconSpan.textContent = icon;
+        iconSpan.setAttribute('aria-hidden', 'true');
+        badge.appendChild(iconSpan);
+
+        // Always create both long + short spans; CSS chooses which to show
+        const longSpan = document.createElement('span');
+        longSpan.className = 'info-long';
+        longSpan.textContent = longText;
+        badge.appendChild(longSpan);
+
+        const shortSpan = document.createElement('span');
+        shortSpan.className = 'info-short';
+        shortSpan.textContent = shortText;
+        badge.appendChild(shortSpan);
+
+        return badge;
     }
 
     function buildPosterCard(item, idx) {
@@ -2170,6 +2352,10 @@
             r.textContent = rating;
             wrap.appendChild(r);
         }
+
+        // v5.2: Info badge — runtime for movies, season count for series
+        const infoBadge = buildInfoBadge(item, isMovie);
+        if (infoBadge) wrap.appendChild(infoBadge);
 
         // v3: Heart button (watchlist)
         const heart = document.createElement('button');
