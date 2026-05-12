@@ -1573,7 +1573,8 @@
             <div class="nav-row">
                 <button id="btn-back" class="btn btn-ghost" type="button">← Back</button>
                 <div class="btn-row-spacer"></div>
-                <button id="btn-next" class="btn btn-primary" type="button">Next →</button>
+                <!-- v5.4: Next button removed - auto-advance handles all forward navigation -->
+                <button id="btn-next" class="btn btn-primary hidden" type="button" aria-hidden="true">Next →</button>
             </div>
 
             <!-- v3: Surprise me row (only visible on Q1) -->
@@ -1961,6 +1962,28 @@
             b.setAttribute('aria-checked', String(isMatch));
         });
         els.validation.classList.remove('show');
+
+        // v5.4: Auto-advance after 250ms highlight on every question.
+        // On the last question, this triggers results loading instead of advancing.
+        // Disable option clicks during the pause so rapid taps don't double-fire.
+        buttons.forEach(b => b.style.pointerEvents = 'none');
+
+        setTimeout(() => {
+            buttons.forEach(b => b.style.pointerEvents = '');
+            // Re-check the answer is still set (in case user clicked Back during delay)
+            if (state.answers[key] !== label) return;
+
+            const total = getTotalSteps();
+            if (state.index < total - 1) {
+                // Not the last question — advance to next
+                state.index++;
+                saveSession();
+                renderQuestion();
+            } else {
+                // Last question — fire results
+                runRecommendations();
+            }
+        }, 250);
     }
 
     function showValidation(msg) {
@@ -2251,6 +2274,9 @@
         els.loading.classList.add('hidden');
         els.results.classList.remove('hidden');
         els.posterGrid.innerHTML = '';
+
+        // v5.3: Scroll page to top so user sees results from the start, not stuck mid-page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
         if (!state.results.length) {
             els.resultsSummary.textContent = 'No matches found — try loosening your filters.';
@@ -3203,6 +3229,12 @@
        ========================================================= */
     async function handleSuggestionClick(item) {
         hideDropdown();
+        // v5.3: Clear search input so user sees a fresh bar when they close the popup
+        els.searchInput.value = '';
+        els.searchClear.classList.add('hidden');
+        els.searchLoader.classList.add('hidden');
+        clearTimeout(searchDebounceTimer);
+        if (searchAbortController) searchAbortController.abort();
         els.searchInput.blur();
 
         if (item.media_type === 'person') {
