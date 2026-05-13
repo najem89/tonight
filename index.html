@@ -704,6 +704,35 @@
             height: 24px;
             border-radius: 6px;
         }
+        /* v6: Clickable provider chip variant */
+        a.provider-chip.clickable {
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s var(--easing);
+            padding-right: 14px;
+        }
+        a.provider-chip.clickable .chip-arrow {
+            font-size: 11px;
+            color: var(--text-muted);
+            transition: all 0.2s var(--easing);
+            margin-left: 2px;
+        }
+        @media (hover: hover) {
+            a.provider-chip.clickable:hover {
+                color: var(--text-primary);
+                border-color: var(--accent);
+                background: rgba(212, 165, 116, 0.06);
+                transform: translateY(-1px);
+            }
+            a.provider-chip.clickable:hover .chip-arrow {
+                color: var(--accent);
+                transform: translate(2px, -2px);
+            }
+        }
+        a.provider-chip.clickable:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
         .providers-empty {
             color: var(--text-muted);
             font-size: 13px;
@@ -2529,7 +2558,7 @@
             const regions = providers.value.results || {};
             const userLocale = (navigator.language || 'en-US').split('-')[1] || 'US';
             const region = regions[userLocale] || regions.US || regions.GB || Object.values(regions)[0];
-            renderProviders(region, userLocale);
+            renderProviders(region, userLocale, title);
         } else {
             els.providersContent.innerHTML = '<div class="providers-empty">Provider info unavailable.</div>';
         }
@@ -2639,7 +2668,55 @@
         els.similarContent.appendChild(grid);
     }
 
-    function renderProviders(region, locale) {
+    /* =========================================================
+       v6: Provider deep-link builder
+       =========================================================
+       Maps known streaming providers to a search URL prefilled
+       with the title. Returns a Google search fallback for any
+       unknown provider so every chip is clickable.
+       ========================================================= */
+    const PROVIDER_SEARCH_URLS = [
+        // Streaming services — global
+        { match: 'netflix',       url: (q) => `https://www.netflix.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'disney plus',   url: (q) => `https://www.disneyplus.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'disney+',       url: (q) => `https://www.disneyplus.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'amazon prime',  url: (q) => `https://www.amazon.com/s?k=${encodeURIComponent(q)}&i=instant-video` },
+        { match: 'prime video',   url: (q) => `https://www.amazon.com/s?k=${encodeURIComponent(q)}&i=instant-video` },
+        { match: 'apple tv',      url: (q) => `https://tv.apple.com/search?term=${encodeURIComponent(q)}` },
+        { match: 'hbo max',       url: (q) => `https://play.max.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'max',           url: (q) => `https://play.max.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'hulu',          url: (q) => `https://www.hulu.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'paramount',     url: (q) => `https://www.paramountplus.com/search/?searchTerm=${encodeURIComponent(q)}` },
+        { match: 'peacock',       url: (q) => `https://www.peacocktv.com/search/${encodeURIComponent(q)}` },
+        { match: 'crunchyroll',   url: (q) => `https://www.crunchyroll.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'youtube',       url: (q) => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}` },
+        // Middle East / Arabic
+        { match: 'osn',           url: (q) => `https://www.osnplus.com/en/search?searchValue=${encodeURIComponent(q)}` },
+        { match: 'shahid',        url: (q) => `https://shahid.mbc.net/en/search?q=${encodeURIComponent(q)}` },
+        { match: 'starzplay',     url: (q) => `https://starzplay.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'starz play',    url: (q) => `https://starzplay.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'starz',         url: (q) => `https://www.starz.com/us/en/search/${encodeURIComponent(q)}` },
+        // Regional / other
+        { match: 'fubo',          url: (q) => `https://www.fubo.tv/search/${encodeURIComponent(q)}` },
+        { match: 'sling',         url: (q) => `https://www.sling.com/search?q=${encodeURIComponent(q)}` },
+        { match: 'showtime',      url: (q) => `https://www.sho.com/search?searchType=on_air&searchTerm=${encodeURIComponent(q)}` },
+        { match: 'mubi',          url: (q) => `https://mubi.com/en/search/films?q=${encodeURIComponent(q)}` },
+        { match: 'tubi',          url: (q) => `https://tubitv.com/search/${encodeURIComponent(q)}` }
+    ];
+
+    function getProviderSearchUrl(providerName, title) {
+        if (!providerName || !title) return null;
+        const lcName = providerName.toLowerCase();
+        for (const p of PROVIDER_SEARCH_URLS) {
+            if (lcName.includes(p.match)) {
+                return p.url(title);
+            }
+        }
+        // Universal fallback: Google search — almost always finds the right page
+        return `https://www.google.com/search?q=${encodeURIComponent(`${providerName} ${title} watch`)}`;
+    }
+
+    function renderProviders(region, locale, title) {
         if (!region || (!region.flatrate && !region.free && !region.ads)) {
             els.providersContent.innerHTML = '<div class="providers-empty">Not currently available on tracked streaming services.</div>';
             return;
@@ -2652,8 +2729,16 @@
         const wrap = document.createElement('div');
         wrap.className = 'providers-list';
         unique.slice(0, 10).forEach(p => {
-            const chip = document.createElement('span');
-            chip.className = 'provider-chip';
+            // v6: Each chip is now a clickable link that opens a search on that provider
+            const searchUrl = getProviderSearchUrl(p.provider_name, title);
+            const chip = document.createElement('a');
+            chip.className = 'provider-chip clickable';
+            chip.href = searchUrl;
+            chip.target = '_blank';
+            chip.rel = 'noopener noreferrer';
+            chip.title = `Search "${title}" on ${p.provider_name}`;
+            chip.setAttribute('aria-label', `Open ${p.provider_name} and search for ${title}`);
+
             if (p.logo_path) {
                 const img = document.createElement('img');
                 img.src = `${CONFIG.IMG_BASE}/w92${p.logo_path}`;
@@ -2663,6 +2748,13 @@
             const name = document.createElement('span');
             name.textContent = p.provider_name;
             chip.appendChild(name);
+            // Subtle arrow indicator that this is clickable
+            const arrow = document.createElement('span');
+            arrow.className = 'chip-arrow';
+            arrow.textContent = '↗';
+            arrow.setAttribute('aria-hidden', 'true');
+            chip.appendChild(arrow);
+
             wrap.appendChild(chip);
         });
 
@@ -2673,7 +2765,7 @@
             const linkRow = document.createElement('div');
             linkRow.style.marginTop = '14px';
             linkRow.style.fontSize = '12px';
-            linkRow.innerHTML = `<a href="${region.link}" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">Open on TMDB →</a>`;
+            linkRow.innerHTML = `<a href="${region.link}" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">All options on TMDB →</a>`;
             els.providersContent.appendChild(linkRow);
         }
     }
@@ -3339,13 +3431,13 @@
             const regions = data.results || {};
             const userLocale = (navigator.language || 'en-US').split('-')[1] || 'US';
             const region = regions[userLocale] || regions.US || regions.GB || Object.values(regions)[0];
-            renderFocusedProviders(region);
+            renderFocusedProviders(region, meta.title);
         } catch (_) {
             els.focusProvidersContent.innerHTML = '<div class="providers-empty">Provider info unavailable.</div>';
         }
     }
 
-    function renderFocusedProviders(region) {
+    function renderFocusedProviders(region, title) {
         if (!region || (!region.flatrate && !region.free && !region.ads && !region.rent && !region.buy)) {
             els.focusProvidersContent.innerHTML = '<div class="providers-empty">Not currently available on tracked streaming services.</div>';
             return;
@@ -3379,8 +3471,15 @@
             const chips = document.createElement('div');
             chips.className = 'providers-list';
             unique.slice(0, 8).forEach(p => {
-                const chip = document.createElement('span');
-                chip.className = 'provider-chip';
+                // v6: Clickable chip with deep-link search URL
+                const searchUrl = getProviderSearchUrl(p.provider_name, title);
+                const chip = document.createElement('a');
+                chip.className = 'provider-chip clickable';
+                chip.href = searchUrl;
+                chip.target = '_blank';
+                chip.rel = 'noopener noreferrer';
+                chip.title = `Search "${title}" on ${p.provider_name}`;
+                chip.setAttribute('aria-label', `Open ${p.provider_name} and search for ${title}`);
                 if (p.logo_path) {
                     const img = document.createElement('img');
                     img.src = `${CONFIG.IMG_BASE}/w92${p.logo_path}`;
@@ -3390,6 +3489,11 @@
                 const name = document.createElement('span');
                 name.textContent = p.provider_name;
                 chip.appendChild(name);
+                const arrow = document.createElement('span');
+                arrow.className = 'chip-arrow';
+                arrow.textContent = '↗';
+                arrow.setAttribute('aria-hidden', 'true');
+                chip.appendChild(arrow);
                 chips.appendChild(chip);
             });
             sectionDiv.appendChild(chips);
