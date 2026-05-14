@@ -696,12 +696,19 @@
         TMDB_BASE: 'https://api.themoviedb.org/3',
         IMG_BASE: 'https://image.tmdb.org/t/p',
 
-        // Your test video on Drive — file ID: 19ymA_BKFzMzDvQ41TLZwasNR_Din0LWR
-        // To swap: replace the ID after 'id=' below with your own Drive file ID
-        VIDEO_URL: 'https://drive.google.com/uc?export=view&id=19ymA_BKFzMzDvQ41TLZwasNR_Din0LWR',
+        // Demo video — Big Buck Bunny (Google's official open sample, free + legal).
+        // Works flawlessly with the custom player, no Drive limitations.
+        VIDEO_URL: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
 
-        // Fallback if Drive video fails to load — Big Buck Bunny (Google's official sample)
-        FALLBACK_URL: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+        // ─── To swap in your own Drive video ──────────────────────────
+        // Replace the URL above with:
+        //   'https://drive.google.com/uc?export=download&id=YOUR_FILE_ID'
+        // ⚠️ Drive blocks embedded video for files over ~100 MB. If your
+        //    file fails to play, switch back to the Big Buck Bunny URL.
+        // ──────────────────────────────────────────────────────────────
+
+        // Secondary fallback if the primary video ever fails to load
+        FALLBACK_URL: 'https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4'
     };
 
     /* =========================================================
