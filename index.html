@@ -924,6 +924,50 @@
             background: rgba(231, 76, 60, 0.08);
         }
 
+        /* v7: Mimo's Movies button — distinct crimson to signal "this is a different product" */
+        .mimo-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 12px;
+            background: linear-gradient(135deg, #c8243d, #8e1a2c);
+            border: 1px solid rgba(232, 52, 79, 0.4);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--body);
+            letter-spacing: 0.02em;
+            text-decoration: none;
+            transition: all 0.2s var(--easing);
+            box-shadow: 0 4px 12px rgba(200, 36, 61, 0.25);
+        }
+        .mimo-btn::before {
+            content: '🎟';
+            font-size: 14px;
+        }
+        @media (hover: hover) {
+            .mimo-btn:hover {
+                background: linear-gradient(135deg, #e8344f, #c8243d);
+                transform: translateY(-1px);
+                box-shadow: 0 6px 18px rgba(200, 36, 61, 0.4);
+            }
+        }
+        .mimo-btn:focus-visible {
+            outline: 2px solid #e8344f;
+            outline-offset: 2px;
+        }
+
+        /* Mimo's section in focused popup */
+        .focus-mimo {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
         /* =========================================================
            v3: Watchlist panel (slide-in drawer)
            ========================================================= */
@@ -1652,6 +1696,7 @@
                 <p class="modal-subtitle" id="modal-subtitle">
                     <span id="modal-subtitle-text"></span>
                     <button class="modal-heart" id="modal-heart" type="button">♡ <span id="modal-heart-text">Save</span></button>
+                    <a class="mimo-btn" id="modal-mimo-btn" target="_blank" rel="noopener">Watch on Mimo's</a>
                 </p>
                 <p class="modal-overview" id="modal-overview"></p>
                 <div class="providers-section">
@@ -1686,6 +1731,9 @@
                     <div id="focus-providers-content">
                         <div class="focus-loading"><span class="reel">🎞️</span></div>
                     </div>
+                </div>
+                <div class="focus-mimo">
+                    <a class="mimo-btn" id="focus-mimo-btn" target="_blank" rel="noopener">Watch on Mimo's</a>
                 </div>
             </div>
         </div>
@@ -1824,7 +1872,9 @@
         focusTitle: $('focus-title'),
         focusSubtitle: $('focus-subtitle'),
         focusPersonHint: $('focus-person-hint'),
-        focusProvidersContent: $('focus-providers-content')
+        focusProvidersContent: $('focus-providers-content'),
+        modalMimoBtn: $('modal-mimo-btn'),
+        focusMimoBtn: $('focus-mimo-btn')
     };
 
     /* =========================================================
@@ -2505,6 +2555,9 @@
         els.providersContent.innerHTML = '<div class="providers-empty">Loading…</div>';
         els.castContent.innerHTML = '<div class="cast-loading">Loading cast…</div>';
         els.similarContent.innerHTML = '<div class="similar-loading">Finding similar titles…</div>';
+
+        // v7: Mimo's Movies link — opens player page with title as query param
+        els.modalMimoBtn.href = `player.html?title=${encodeURIComponent(title)}`;
 
         // v3: wire up modal heart button to current item
         const updateModalHeart = () => {
@@ -3411,6 +3464,9 @@
         subParts.push(meta.isMovie ? 'Film' : 'Series');
         if (meta.rating) subParts.push(`★ ${meta.rating.toFixed(1)}`);
         els.focusSubtitle.textContent = subParts.join(' · ');
+
+        // v7: Mimo's Movies link — opens player page
+        els.focusMimoBtn.href = `player.html?title=${encodeURIComponent(meta.title)}`;
 
         // Hero image
         if (meta.poster) {
