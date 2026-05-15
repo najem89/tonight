@@ -696,20 +696,38 @@
         TMDB_BASE: 'https://api.themoviedb.org/3',
         IMG_BASE: 'https://image.tmdb.org/t/p',
 
-        // Demo video — Big Buck Bunny (Google's official open sample, free + legal).
-        // Works flawlessly with the custom player, no Drive limitations.
-        VIDEO_URL: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-
-        // ─── To swap in your own Drive video ──────────────────────────
-        // Replace the URL above with:
-        //   'https://drive.google.com/uc?export=download&id=YOUR_FILE_ID'
-        // ⚠️ Drive blocks embedded video for files over ~100 MB. If your
-        //    file fails to play, switch back to the Big Buck Bunny URL.
-        // ──────────────────────────────────────────────────────────────
-
-        // Secondary fallback if the primary video ever fails to load
-        FALLBACK_URL: 'https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4'
+        // ─── Your OneDrive video (personal account) ──────────────────────
+        // Paste the share link you get from OneDrive's "Share" button.
+        // The code below will automatically convert it into an embeddable URL
+        // using Microsoft's Shares API. No manual conversion required.
+        // ────────────────────────────────────────────────────────────────
+        ONEDRIVE_SHARE_URL: 'https://1drv.ms/v/c/e55284a92fd4e358/IQCb-pSufqj7Q4Fd7tffq-KBAeVakxobsuxMEzkfQb081xg?e=inCBJh'
     };
+
+    /* =========================================================
+       OneDrive share link → embed URL converter
+       =========================================================
+       Microsoft's Shares API accepts a base64-encoded share link
+       (with URL-safe character swaps) and returns the file content.
+       This is documented at https://learn.microsoft.com/en-us/graph/api/shares-get
+       ========================================================= */
+    function buildOneDriveEmbedUrl(shareLink) {
+        if (!shareLink) return null;
+        try {
+            // Base64-encode the share link
+            // btoa needs ASCII — handle any UTF-8 chars safely via encodeURIComponent
+            const b64 = btoa(unescape(encodeURIComponent(shareLink)));
+            // Make it URL-safe (per Microsoft's spec)
+            const urlSafe = b64
+                .replace(/=+$/, '')      // strip padding
+                .replace(/\//g, '_')     // / → _
+                .replace(/\+/g, '-');    // + → -
+            return `https://api.onedrive.com/v1.0/shares/u!${urlSafe}/root/content`;
+        } catch (err) {
+            console.error('Could not encode share link:', err);
+            return null;
+        }
+    }
 
     /* =========================================================
        Element refs
@@ -890,11 +908,26 @@
     /* =========================================================
        VIDEO PLAYER
        ========================================================= */
-    let triedFallback = false;
-
     function loadVideo() {
-        els.video.src = CONFIG.VIDEO_URL;
+        const embedUrl = buildOneDriveEmbedUrl(CONFIG.ONEDRIVE_SHARE_URL);
+        if (!embedUrl) {
+            showVideoError(
+                'No video configured',
+                'No OneDrive share link is set in CONFIG.ONEDRIVE_SHARE_URL. Open player.html and paste your OneDrive share link.'
+            );
+            return;
+        }
+        console.log('Loading video from:', embedUrl);
+        els.video.src = embedUrl;
         els.video.load();
+    }
+
+    function showVideoError(headline, detail) {
+        els.loading.classList.add('hidden');
+        els.error.classList.add('show');
+        const titleEl = els.error.querySelector('h3');
+        if (titleEl) titleEl.textContent = headline;
+        els.errorDetail.textContent = detail;
     }
 
     els.video.addEventListener('loadedmetadata', () => {
@@ -904,19 +937,11 @@
     });
 
     els.video.addEventListener('error', () => {
-        if (!triedFallback) {
-            triedFallback = true;
-            console.warn('Primary video failed — trying fallback');
-            els.errorDetail.textContent = 'Your Drive video could not load. Trying a fallback sample video…';
-            setTimeout(() => {
-                els.video.src = CONFIG.FALLBACK_URL;
-                els.video.load();
-            }, 800);
-        } else {
-            els.loading.classList.add('hidden');
-            els.error.classList.add('show');
-            els.errorDetail.textContent = 'Both the primary and fallback videos failed. Check your internet connection or video URL.';
-        }
+        console.error('Video failed to load:', els.video.error);
+        showVideoError(
+            'Reel out of frame',
+            'OneDrive blocked the video request. This usually means: (1) the share link expired, (2) sharing isn\'t set to "Anyone with the link", or (3) Microsoft is rate-limiting embedded playback for this account. Open the share link directly in a browser to confirm it still works.'
+        );
     });
 
     /* Play/pause */
