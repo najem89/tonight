@@ -616,7 +616,7 @@
                 <!-- Error overlay -->
                 <div class="player-error" id="player-error">
                     <h3>Reel out of frame</h3>
-                    <p id="error-detail">We couldn't load the video. If you uploaded a private Drive file, make sure it's set to "Anyone with the link."</p>
+                    <p id="error-detail">We couldn't load the video. Try opening the video URL directly in a new tab to confirm it still works.</p>
                 </div>
 
                 <!-- Center play button (when paused) -->
@@ -690,44 +690,22 @@
     <script>
     /* =========================================================
        CONFIG
+       =========================================================
+       VIDEO_URL — direct link to your .mp4 file.
+       Currently using a GitHub Releases URL (public, free, supports
+       streaming/seek). Replace this with any other direct video URL
+       when needed.
+
+       To add more videos later: see the TODO note at the bottom of
+       this script — you'll want a title → URL mapping object.
        ========================================================= */
     const CONFIG = {
         TMDB_API_KEY: '16c5651f75b515d6f334afeff8f9536a',
         TMDB_BASE: 'https://api.themoviedb.org/3',
         IMG_BASE: 'https://image.tmdb.org/t/p',
 
-        // ─── Your OneDrive video (personal account) ──────────────────────
-        // Paste the share link you get from OneDrive's "Share" button.
-        // The code below will automatically convert it into an embeddable URL
-        // using Microsoft's Shares API. No manual conversion required.
-        // ────────────────────────────────────────────────────────────────
-        ONEDRIVE_SHARE_URL: 'https://1drv.ms/v/c/e55284a92fd4e358/IQCb-pSufqj7Q4Fd7tffq-KBAeVakxobsuxMEzkfQb081xg?e=inCBJh'
+        VIDEO_URL: 'https://github.com/najem89/tonight/releases/download/v0.1-videos/Divus.Animation.2019.mp4'
     };
-
-    /* =========================================================
-       OneDrive share link → embed URL converter
-       =========================================================
-       Microsoft's Shares API accepts a base64-encoded share link
-       (with URL-safe character swaps) and returns the file content.
-       This is documented at https://learn.microsoft.com/en-us/graph/api/shares-get
-       ========================================================= */
-    function buildOneDriveEmbedUrl(shareLink) {
-        if (!shareLink) return null;
-        try {
-            // Base64-encode the share link
-            // btoa needs ASCII — handle any UTF-8 chars safely via encodeURIComponent
-            const b64 = btoa(unescape(encodeURIComponent(shareLink)));
-            // Make it URL-safe (per Microsoft's spec)
-            const urlSafe = b64
-                .replace(/=+$/, '')      // strip padding
-                .replace(/\//g, '_')     // / → _
-                .replace(/\+/g, '-');    // + → -
-            return `https://api.onedrive.com/v1.0/shares/u!${urlSafe}/root/content`;
-        } catch (err) {
-            console.error('Could not encode share link:', err);
-            return null;
-        }
-    }
 
     /* =========================================================
        Element refs
@@ -794,7 +772,6 @@
         els.title.textContent = title;
 
         try {
-            // Search TMDB for the title
             const searchURL = `${CONFIG.TMDB_BASE}/search/multi?api_key=${CONFIG.TMDB_API_KEY}&language=en-US&query=${encodeURIComponent(title)}&page=1&include_adult=false`;
             const resp = await fetch(searchURL);
             if (!resp.ok) throw new Error('Search failed');
@@ -804,7 +781,6 @@
                 renderMetadata(null);
                 return;
             }
-            // Get full details + credits
             const endpoint = best.media_type === 'movie' ? 'movie' : 'tv';
             const [details, credits] = await Promise.allSettled([
                 fetch(`${CONFIG.TMDB_BASE}/${endpoint}/${best.id}?api_key=${CONFIG.TMDB_API_KEY}&language=en-US`).then(r => r.json()),
@@ -831,7 +807,6 @@
         const year = dateStr ? new Date(dateStr).getFullYear() : null;
         const rating = media.vote_average;
 
-        // Ambient backdrop
         if (media.backdrop_path) {
             els.ambient.style.backgroundImage = `url(${CONFIG.IMG_BASE}/original${media.backdrop_path})`;
             els.ambient.classList.add('loaded');
@@ -840,7 +815,6 @@
             els.ambient.classList.add('loaded');
         }
 
-        // Meta row pieces
         const parts = [];
         if (year) parts.push(`<span>${year}</span>`);
         parts.push(`<span class="dot">·</span>`);
@@ -861,7 +835,6 @@
         }
         els.meta.innerHTML = parts.join('');
 
-        // Cast (top 8)
         renderCast(cast);
     }
 
@@ -909,16 +882,15 @@
        VIDEO PLAYER
        ========================================================= */
     function loadVideo() {
-        const embedUrl = buildOneDriveEmbedUrl(CONFIG.ONEDRIVE_SHARE_URL);
-        if (!embedUrl) {
+        if (!CONFIG.VIDEO_URL) {
             showVideoError(
                 'No video configured',
-                'No OneDrive share link is set in CONFIG.ONEDRIVE_SHARE_URL. Open player.html and paste your OneDrive share link.'
+                'No video URL is set in CONFIG.VIDEO_URL. Open player.html and paste a direct .mp4 link.'
             );
             return;
         }
-        console.log('Loading video from:', embedUrl);
-        els.video.src = embedUrl;
+        console.log('Loading video from:', CONFIG.VIDEO_URL);
+        els.video.src = CONFIG.VIDEO_URL;
         els.video.load();
     }
 
@@ -940,7 +912,7 @@
         console.error('Video failed to load:', els.video.error);
         showVideoError(
             'Reel out of frame',
-            'OneDrive blocked the video request. This usually means: (1) the share link expired, (2) sharing isn\'t set to "Anyone with the link", or (3) Microsoft is rate-limiting embedded playback for this account. Open the share link directly in a browser to confirm it still works.'
+            'The video could not be loaded. Possible causes: (1) the URL is wrong or the file was renamed in the GitHub release, (2) your connection dropped, or (3) the file format is not supported by your browser. Try opening the video URL directly in a new tab to confirm it still downloads.'
         );
     });
 
@@ -1128,6 +1100,14 @@
 
     /* =========================================================
        Boot
+       =========================================================
+       TODO (when adding more videos):
+         Replace CONFIG.VIDEO_URL with a lookup like:
+           const VIDEO_LIBRARY = {
+             'Divus': 'https://github.com/.../Divus.Animation.2019.mp4',
+             'Friends': 'https://github.com/.../Friends.S01E01.mp4',
+           };
+         Then in loadVideo() pick by getTitleFromURL().
        ========================================================= */
     const title = getTitleFromURL();
     fetchTMDBMetadata(title);
